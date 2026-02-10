@@ -1,0 +1,116 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-light: #ffffff;
+  --color-dark: #171717;
+}
+
+.accent-text {
+  @apply text-slate-600;
+}
+
+body {
+  font-family:
+    "Inter Variable",
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    "Helvetica Neue",
+    Arial,
+    "Noto Sans",
+    sans-serif,
+    "Apple Color Emoji",
+    "Segoe UI Emoji",
+    "Segoe UI Symbol",
+    "Noto Color Emoji";
+  color: var(--color-dark);
+  background: var(--color-light);
+}
+
+/* only use this to update the style of the auth input fields. use a different class for all other input fields */
+.auth-input-field {
+  @apply w-full px-4 py-3 rounded-container bg-white border border-gray-200 focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-shadow shadow-sm hover:shadow;
+}
+
+/* only use this to update the style of the auth buttons. use the button class for all other buttons */
+.auth-button {
+  @apply w-full px-4 py-3 rounded bg-primary text-white font-semibold hover:bg-primary-hover transition-colors shadow-sm hover:shadow disabled:opacity-50 disabled:cursor-not-allowed;
+}
+
+/* Custom styles for the missing person detection system */
+.case-card {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow;
+}
+
+.status-badge {
+  @apply px-2 py-1 rounded text-xs font-medium;
+}
+
+.confidence-high {
+  @apply bg-green-100 text-green-800;
+}
+
+.confidence-medium {
+  @apply bg-yellow-100 text-yellow-800;
+}
+
+.confidence-low {
+  @apply bg-red-100 text-red-800;
+}
+
+.heat-zone {
+  @apply border-l-4 border-blue-500 pl-4 py-2;
+}
+
+.analysis-section {
+  @apply bg-white rounded-lg shadow-sm border border-gray-200 p-6;
+}
+
+.step-indicator {
+  @apply w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium;
+}
+
+.step-active {
+  @apply bg-blue-600 text-white;
+}
+
+.step-inactive {
+  @apply bg-gray-200 text-gray-600;
+}
+
+.form-input {
+  @apply w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+}
+
+.btn-primary {
+  @apply px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 transition-colors;
+}
+
+.btn-success {
+  @apply px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700 transition-colors;
+}
+
+.btn-danger {
+  @apply px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700 transition-colors;
+}
+
+.disclaimer-box {
+  @apply bg-yellow-50 border border-yellow-200 rounded-lg p-4;
+}
+
+.match-card {
+  @apply border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors;
+}
+
+.prediction-card {
+  @apply border-l-4 border-blue-500 pl-4 py-2 bg-blue-50 rounded-r;
+}

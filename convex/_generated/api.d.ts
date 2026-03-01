@@ -11,9 +11,11 @@
 import type * as analysis from "../analysis.js";
 import type * as auth from "../auth.js";
 import type * as cases from "../cases.js";
+import type * as cctv from "../cctv.js";
 import type * as http from "../http.js";
 import type * as matches from "../matches.js";
 import type * as router from "../router.js";
+import type * as tracking from "../tracking.js";
 
 import type {
   ApiFromModules,
@@ -25,9 +27,11 @@ declare const fullApi: ApiFromModules<{
   analysis: typeof analysis;
   auth: typeof auth;
   cases: typeof cases;
+  cctv: typeof cctv;
   http: typeof http;
   matches: typeof matches;
   router: typeof router;
+  tracking: typeof tracking;
 }>;
 
 /**

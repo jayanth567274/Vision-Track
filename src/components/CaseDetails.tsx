@@ -3,6 +3,9 @@ import { api } from "../../convex/_generated/api";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Id } from "../../convex/_generated/dataModel";
+import { LiveTracking } from "./LiveTracking";
+import { CCTVFootage } from "./CCTVFootage";
+import { MapView } from "./MapView";
 
 interface CaseDetailsProps {
   caseId: string;
@@ -16,6 +19,7 @@ export function CaseDetails({ caseId, onBack }: CaseDetailsProps) {
   
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState("");
+  const [activeTab, setActiveTab] = useState<"overview" | "analysis" | "tracking" | "cctv" | "map">("overview");
   const analyzeCase = useAction(api.analysis.analyzeCase);
 
   const handleAnalyze = async () => {
@@ -25,7 +29,6 @@ export function CaseDetails({ caseId, onBack }: CaseDetailsProps) {
     setAnalysisProgress("Initializing AI analysis...");
     
     try {
-      // Simulate progress updates
       setTimeout(() => setAnalysisProgress("Processing facial features..."), 500);
       setTimeout(() => setAnalysisProgress("Analyzing visual markers..."), 1000);
       setTimeout(() => setAnalysisProgress("Generating location predictions..."), 1500);
@@ -44,7 +47,6 @@ export function CaseDetails({ caseId, onBack }: CaseDetailsProps) {
       setAnalysisProgress("Analysis completed successfully!");
       toast.success("🎯 AI Analysis completed! Check the results below.");
       
-      // Show email notification info
       if (case_.reporterEmail) {
         setTimeout(() => {
           toast.info(`📧 Analysis results sent to ${case_.reporterEmail}`);
@@ -80,7 +82,7 @@ export function CaseDetails({ caseId, onBack }: CaseDetailsProps) {
           ← Back to Dashboard
         </button>
         
-        {!case_.analysisComplete && (
+        {!case_.analysisComplete && activeTab === "analysis" && (
           <div className="flex flex-col items-end gap-2">
             <button
               onClick={handleAnalyze}
@@ -103,26 +105,110 @@ export function CaseDetails({ caseId, onBack }: CaseDetailsProps) {
         )}
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          <CaseSummary case_={case_} />
-          
-          {case_.analysisComplete && (
-            <>
-              <VisualAnalysis case_={case_} />
-              <PotentialMatches matches={matches || []} />
-            </>
-          )}
-        </div>
-
-        <div className="space-y-6">
-          {case_.analysisComplete && predictions && (
-            <LocationPredictions predictions={predictions} />
-          )}
-          <RecommendedActions case_={case_} />
-          <EthicalDisclaimer />
-        </div>
+      {/* Tab Navigation */}
+      <div className="border-b border-gray-200">
+        <nav className="flex space-x-8">
+          <button
+            onClick={() => setActiveTab("overview")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "overview"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            📋 Case Overview
+          </button>
+          <button
+            onClick={() => setActiveTab("analysis")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "analysis"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            🤖 AI Analysis
+          </button>
+          <button
+            onClick={() => setActiveTab("tracking")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "tracking"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            📍 Live Tracking
+          </button>
+          <button
+            onClick={() => setActiveTab("cctv")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "cctv"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            🎥 CCTV Footage
+          </button>
+          <button
+            onClick={() => setActiveTab("map")}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === "map"
+                ? "border-blue-500 text-blue-600"
+                : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+            }`}
+          >
+            🗺️ Map View
+          </button>
+        </nav>
       </div>
+
+      {/* Tab Content */}
+      {activeTab === "overview" && (
+        <div className="grid lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            <CaseSummary case_={case_} />
+            <LastSeenDetails case_={case_} />
+          </div>
+          <div className="space-y-6">
+            <RecommendedActions case_={case_} />
+            <EthicalDisclaimer />
+          </div>
+        </div>
+      )}
+
+      {activeTab === "analysis" && (
+        <div className="grid lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-2 space-y-6">
+            <CaseSummary case_={case_} />
+            
+            {case_.analysisComplete && (
+              <>
+                <VisualAnalysis case_={case_} />
+                <PotentialMatches matches={matches || []} />
+              </>
+            )}
+          </div>
+
+          <div className="space-y-6">
+            {case_.analysisComplete && predictions && (
+              <LocationPredictions predictions={predictions} />
+            )}
+            <RecommendedActions case_={case_} />
+            <EthicalDisclaimer />
+          </div>
+        </div>
+      )}
+
+      {activeTab === "tracking" && (
+        <LiveTracking caseId={caseId} case_={case_} />
+      )}
+
+      {activeTab === "cctv" && (
+        <CCTVFootage caseId={caseId} />
+      )}
+
+      {activeTab === "map" && (
+        <MapView caseId={caseId} case_={case_} />
+      )}
     </div>
   );
 }
@@ -135,13 +221,23 @@ function CaseSummary({ case_ }: { case_: any }) {
           <h2 className="text-2xl font-bold text-gray-900">{case_.personName}</h2>
           <p className="text-gray-600">Case #{case_.caseId}</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded text-sm font-medium">
             {case_.status.toUpperCase()}
           </span>
           <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded text-sm font-medium">
             {case_.priority.toUpperCase()} PRIORITY
           </span>
+          {case_.liveTrackingEnabled && (
+            <span className="px-3 py-1 bg-green-100 text-green-800 rounded text-sm font-medium">
+              📍 LIVE TRACKING
+            </span>
+          )}
+          {case_.analysisComplete && (
+            <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded text-sm font-medium">
+              🤖 AI ANALYZED
+            </span>
+          )}
         </div>
       </div>
 
@@ -152,7 +248,7 @@ function CaseSummary({ case_ }: { case_: any }) {
               <img 
                 src={case_.photoUrl} 
                 alt="Missing person"
-                className="w-full max-w-sm h-64 object-cover rounded-lg"
+                className="w-full max-w-sm h-64 object-cover rounded-lg border-2 border-gray-200"
               />
             </div>
           )}
@@ -160,37 +256,136 @@ function CaseSummary({ case_ }: { case_: any }) {
 
         <div className="space-y-4">
           <div>
-            <h3 className="font-semibold text-gray-900 mb-2">Personal Details</h3>
-            <div className="space-y-1 text-sm">
-              <p><strong>Age:</strong> {case_.age}</p>
-              <p><strong>Gender:</strong> {case_.gender}</p>
-              <p><strong>Height:</strong> {case_.height}</p>
-              <p><strong>Body Type:</strong> {case_.bodyType}</p>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-2">Last Known Information</h3>
-            <div className="space-y-1 text-sm">
-              <p><strong>Location:</strong> {case_.lastSeenLocation}</p>
-              <p><strong>Date:</strong> {case_.lastSeenDate}</p>
-              <p><strong>Time:</strong> {case_.lastSeenTime}</p>
-              <p><strong>Clothing:</strong> {case_.clothingDescription}</p>
+            <h3 className="font-semibold text-gray-900 mb-2">👤 Personal Details</h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-gray-600">Age:</span>
+                <span className="font-medium">{case_.age} years old</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Gender:</span>
+                <span className="font-medium capitalize">{case_.gender}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Height:</span>
+                <span className="font-medium">{case_.height || 'Not specified'}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Body Type:</span>
+                <span className="font-medium capitalize">{case_.bodyType || 'Not specified'}</span>
+              </div>
             </div>
           </div>
 
           {case_.identifyingFeatures.length > 0 && (
             <div>
-              <h3 className="font-semibold text-gray-900 mb-2">Identifying Features</h3>
+              <h3 className="font-semibold text-gray-900 mb-2">🔍 Identifying Features</h3>
               <div className="flex flex-wrap gap-1">
                 {case_.identifyingFeatures.map((feature: string, index: number) => (
-                  <span key={index} className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                  <span key={index} className="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs font-medium">
                     {feature}
                   </span>
                 ))}
               </div>
             </div>
           )}
+
+          {case_.lastKnownCoordinates && (
+            <div>
+              <h3 className="font-semibold text-gray-900 mb-2">📍 Current GPS Location</h3>
+              <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                  <span className="text-sm font-medium text-green-800">LIVE LOCATION</span>
+                </div>
+                <p className="text-sm text-green-800">
+                  <strong>Coordinates:</strong> {case_.lastKnownCoordinates.lat.toFixed(6)}, {case_.lastKnownCoordinates.lng.toFixed(6)}
+                  <br />
+                  <strong>Accuracy:</strong> ±{case_.lastKnownCoordinates.accuracy}m
+                  <br />
+                  <strong>Last Update:</strong> {new Date(case_.lastKnownCoordinates.timestamp).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function LastSeenDetails({ case_ }: { case_: any }) {
+  const timeElapsed = Math.floor((Date.now() - new Date(`${case_.lastSeenDate}T${case_.lastSeenTime}`).getTime()) / (1000 * 60 * 60));
+  
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+      <h3 className="text-lg font-semibold text-gray-900 mb-4">📍 Last Known Information</h3>
+      
+      <div className="grid md:grid-cols-2 gap-6">
+        <div className="space-y-4">
+          <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
+            <h4 className="font-medium text-red-900 mb-2">⏰ Time Critical</h4>
+            <p className="text-sm text-red-800">
+              <strong>{timeElapsed} hours</strong> have passed since last sighting
+            </p>
+            <div className="mt-2 w-full bg-red-200 rounded-full h-2">
+              <div 
+                className="bg-red-600 h-2 rounded-full transition-all duration-1000"
+                style={{ width: `${Math.min(timeElapsed * 2, 100)}%` }}
+              ></div>
+            </div>
+          </div>
+
+          <div>
+            <h4 className="font-medium text-gray-900 mb-2">📍 Location Details</h4>
+            <div className="space-y-2 text-sm">
+              <div>
+                <span className="text-gray-600">Address:</span>
+                <p className="font-medium text-gray-900">{case_.lastSeenLocation}</p>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Date:</span>
+                <span className="font-medium">{new Date(case_.lastSeenDate).toLocaleDateString()}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">Time:</span>
+                <span className="font-medium">{case_.lastSeenTime}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h4 className="font-medium text-gray-900 mb-2">👕 Clothing Description</h4>
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <p className="text-sm text-gray-700">
+              {case_.clothingDescription || 'No clothing description provided'}
+            </p>
+          </div>
+
+          {case_.behavioralPatterns && (
+            <div className="mt-4">
+              <h4 className="font-medium text-gray-900 mb-2">🧠 Behavioral Patterns</h4>
+              <div className="bg-blue-50 p-4 rounded-lg">
+                <p className="text-sm text-blue-800">{case_.behavioralPatterns}</p>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+        <div className="flex items-start gap-3">
+          <div className="text-yellow-600 text-xl">⚠️</div>
+          <div>
+            <h4 className="font-medium text-yellow-900">Search Priority Assessment</h4>
+            <p className="text-sm text-yellow-800 mt-1">
+              Based on the time elapsed and person's profile, this case requires 
+              <strong className="ml-1">
+                {timeElapsed < 24 ? 'IMMEDIATE' : timeElapsed < 72 ? 'HIGH' : 'CONTINUED'}
+              </strong> attention.
+            </p>
+          </div>
         </div>
       </div>
     </div>
@@ -352,12 +547,14 @@ function LocationPredictions({ predictions }: { predictions: any }) {
 
 function RecommendedActions({ case_ }: { case_: any }) {
   const actions = [
-    "Contact local police department",
+    "Contact local police department immediately",
     "Check nearby hospitals and shelters",
-    "Post on social media with photo",
-    "Contact local news stations",
-    "Check public transportation hubs",
+    "Post on social media with photo and details",
+    "Contact local news stations for coverage",
+    "Check public transportation hubs and stations",
     "Verify predicted locations in person",
+    "Review CCTV footage from surrounding areas",
+    "Contact friends, family, and known associates",
   ];
 
   return (
@@ -367,7 +564,7 @@ function RecommendedActions({ case_ }: { case_: any }) {
       <ul className="space-y-2">
         {actions.map((action, index) => (
           <li key={index} className="flex items-start gap-2 text-sm">
-            <span className="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium mt-0.5">
+            <span className="w-5 h-5 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xs font-medium mt-0.5 flex-shrink-0">
               {index + 1}
             </span>
             <span className="text-gray-700">{action}</span>
@@ -375,10 +572,10 @@ function RecommendedActions({ case_ }: { case_: any }) {
         ))}
       </ul>
 
-      <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
-        <p className="text-sm text-yellow-800">
-          <strong>⚠️ Priority:</strong> Contact authorities immediately for cases involving minors, 
-          elderly individuals, or those with medical conditions.
+      <div className="mt-4 p-3 bg-red-50 border border-red-200 rounded">
+        <p className="text-sm text-red-800">
+          <strong>🚨 URGENT:</strong> The first 24-48 hours are critical. Contact authorities immediately 
+          for cases involving minors, elderly individuals, or those with medical conditions.
         </p>
       </div>
     </div>

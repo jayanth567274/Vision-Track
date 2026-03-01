@@ -17,14 +17,14 @@ export default function App() {
       <header className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b shadow-sm">
         <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
           <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold text-blue-600">🔍 Missing Person AI</h1>
+            <h1 className="text-xl font-bold text-blue-600">Missing Person AI</h1>
             <Authenticated>
               <nav className="flex gap-4">
                 <button
                   onClick={() => setCurrentView("dashboard")}
                   className={`px-3 py-1 rounded ${
-                    currentView === "dashboard" 
-                      ? "bg-blue-100 text-blue-700" 
+                    currentView === "dashboard"
+                      ? "bg-blue-100 text-blue-700"
                       : "text-gray-600 hover:text-blue-600"
                   }`}
                 >
@@ -33,8 +33,8 @@ export default function App() {
                 <button
                   onClick={() => setCurrentView("create")}
                   className={`px-3 py-1 rounded ${
-                    currentView === "create" 
-                      ? "bg-blue-100 text-blue-700" 
+                    currentView === "create"
+                      ? "bg-blue-100 text-blue-700"
                       : "text-gray-600 hover:text-blue-600"
                   }`}
                 >
@@ -48,24 +48,24 @@ export default function App() {
       </header>
 
       <main className="flex-1">
-        <Content 
+        <Content
           currentView={currentView}
           setCurrentView={setCurrentView}
           selectedCaseId={selectedCaseId}
           setSelectedCaseId={setSelectedCaseId}
         />
       </main>
-      
+
       <Toaster />
     </div>
   );
 }
 
-function Content({ 
-  currentView, 
-  setCurrentView, 
-  selectedCaseId, 
-  setSelectedCaseId 
+function Content({
+  currentView,
+  setCurrentView,
+  selectedCaseId,
+  setSelectedCaseId,
 }: {
   currentView: "dashboard" | "create" | "details";
   setCurrentView: (view: "dashboard" | "create" | "details") => void;
@@ -85,28 +85,41 @@ function Content({
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <Unauthenticated>
-        <div className="max-w-md mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              AI-Powered Missing Person Detection
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Advanced computer vision and geospatial analysis to assist in locating missing individuals
-            </p>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-              <p className="text-sm text-yellow-800">
-                <strong>⚖️ Ethical AI Notice:</strong> This system provides decision-support only. 
-                All results require human verification and should not be used as sole evidence.
+        <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-indigo-50 p-6 shadow-lg sm:p-10">
+          <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-indigo-100/80 blur-3xl" />
+          <div className="pointer-events-none absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-cyan-100/80 blur-3xl" />
+
+          <div className="relative grid gap-8 lg:grid-cols-2 lg:items-center">
+            <div className="text-center lg:text-left">
+              <h2 className="mb-4 text-3xl font-bold text-gray-900 sm:text-4xl">
+                AI-Powered Missing Person Detection
+              </h2>
+              <p className="mb-6 text-gray-600">
+                Advanced computer vision and geospatial analysis to assist in
+                locating missing individuals
+              </p>
+              <div className="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
+                <p className="text-sm text-yellow-800">
+                  <strong>Ethical AI Notice:</strong> This system provides
+                  decision-support only. All results require human verification
+                  and should not be used as sole evidence.
+                </p>
+              </div>
+              <p className="text-sm text-slate-500">
+                Built for safer, faster, and more accountable search workflows.
               </p>
             </div>
+
+            <div className="mx-auto w-full max-w-md">
+              <SignInForm />
+            </div>
           </div>
-          <SignInForm />
         </div>
       </Unauthenticated>
 
       <Authenticated>
         {currentView === "dashboard" && (
-          <Dashboard 
+          <Dashboard
             onViewCase={(caseId) => {
               setSelectedCaseId(caseId);
               setCurrentView("details");
@@ -114,7 +127,7 @@ function Content({
           />
         )}
         {currentView === "create" && (
-          <CreateCase 
+          <CreateCase
             onCaseCreated={(caseId) => {
               setSelectedCaseId(caseId);
               setCurrentView("details");
@@ -122,7 +135,7 @@ function Content({
           />
         )}
         {currentView === "details" && selectedCaseId && (
-          <CaseDetails 
+          <CaseDetails
             caseId={selectedCaseId}
             onBack={() => setCurrentView("dashboard")}
           />

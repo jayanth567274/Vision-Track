@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <url>
+    <loc>https://vision-track-opal.vercel.app/</loc>
+  </url>
+
+  <url>
+    <loc>https://vision-track-opal.vercel.app/login</loc>
+  </url>
+
+  <url>
+    <loc>https://vision-track-opal.vercel.app/register</loc>
+  </url>
+
+  <url>
+    <loc>https://vision-track-opal.vercel.app/dashboard</loc>
+  </url>
+
+  <url>
+    <loc>https://vision-track-opal.vercel.app/newcase</loc>
+  </url>
+
+</urlset>

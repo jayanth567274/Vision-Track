@@ -11,54 +11,54 @@ export function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="min-h-[560px] grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-      {/* Left: visual + features */}
-      <div className="relative overflow-hidden rounded-2xl p-8 login-left flex flex-col justify-center dark:bg-slate-900 bg-gradient-to-br from-slate-50 to-slate-100">
-        <div className="flex items-center gap-4 mb-8">
-          <div className="relative w-20 h-20 flex items-center justify-center">
-            <div className="absolute inset-0 rounded-full ring-ring animate-ring" />
-            <div className="relative z-10 w-14 h-14 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-cyan-400 text-white font-bold">
-              VT
+    <div className="min-h-screen w-full flex items-stretch">
+      {/* Left: visual + features - 45% width */}
+      <div className="hidden lg:flex w-[45%] relative overflow-hidden p-12 login-left flex-col justify-between dark:bg-slate-900 bg-gradient-to-br from-slate-50 to-slate-100">
+        <div>
+          <div className="flex items-center gap-4 mb-12">
+            <div className="relative w-16 h-16 flex items-center justify-center">
+              <div className="absolute inset-0 rounded-full ring-ring animate-ring" />
+              <div className="relative z-10 w-12 h-12 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-cyan-400 text-white font-bold text-lg">
+                VT
+              </div>
+            </div>
+            <div>
+              <h1 className="text-4xl font-bold text-white dark:text-white text-slate-900">Vision Track</h1>
+              <p className="text-base text-slate-300 dark:text-slate-300 text-slate-600 mt-1">Insight. Track. Solve.</p>
             </div>
           </div>
-          <div>
-            <h2 className="text-3xl font-bold text-white dark:text-white text-slate-900">Vision Track</h2>
-            <p className="text-sm text-slate-300 dark:text-slate-300 text-slate-600">Insight. Track. Solve.</p>
+
+          <div className="space-y-4">
+            <FeatureCard title="AI Detection" icon={<Cpu className="text-blue-400 dark:text-blue-400 text-blue-600" />} />
+            <FeatureCard title="Live Tracking" icon={<Zap className="text-cyan-400 dark:text-cyan-400 text-cyan-600" />} />
+            <FeatureCard title="Secure & Compliant" icon={<Shield className="text-indigo-300 dark:text-indigo-300 text-indigo-600" />} />
           </div>
         </div>
 
-        <div className="space-y-3">
-          <FeatureCard title="AI Detection" icon={<Cpu className="text-blue-400 dark:text-blue-400 text-blue-600" />} />
-          <FeatureCard title="Live Tracking" icon={<Zap className="text-cyan-400 dark:text-cyan-400 text-cyan-600" />} />
-          <FeatureCard title="Secure" icon={<Shield className="text-indigo-300 dark:text-indigo-300 text-indigo-600" />} />
-        </div>
-
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="particles" />
+        <div className="text-sm text-slate-400 dark:text-slate-400 text-slate-600">
+          <p className="font-semibold mb-2">⚖️ Important</p>
+          <p>AI-assisted analysis for decision support only. Always contact local authorities for missing person cases.</p>
         </div>
       </div>
 
-      {/* Right: glass form card */}
-      <div className="relative w-full">
-        <div className="glass-card relative rounded-2xl p-8 shadow-xl dark:shadow-xl shadow-slate-200/50">
-          <div className="flex items-center justify-between mb-4">
-            <div className="inline-flex items-center gap-3">
-              <div className="p-2 rounded-full bg-white/6 dark:bg-white/6 bg-slate-900/10">
-                <Shield className="text-white dark:text-white text-slate-800" />
+      {/* Right: form card - 55% width */}
+      <div className="w-full lg:w-[55%] flex items-center justify-center p-8 lg:p-16 bg-white dark:bg-slate-950">
+        <div className="glass-card relative rounded-3xl p-10 shadow-2xl dark:shadow-2xl shadow-slate-200/50 w-full max-w-md">
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-2">
+              <div className="inline-flex items-center gap-2">
+                <div className="p-2 rounded-full bg-white/6 dark:bg-white/6 bg-slate-900/10">
+                  <Shield className="text-white dark:text-white text-slate-800 w-4 h-4" />
+                </div>
+                <span className="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider text-slate-200 dark:text-slate-200 text-slate-700 bg-white/6 dark:bg-white/6 bg-slate-900/5 border border-white/8 dark:border-white/8 border-slate-200">
+                  <Lock className="mr-1" size={12} /> SECURE ACCESS
+                </span>
               </div>
-              <span className="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider text-slate-200 dark:text-slate-200 text-slate-700 bg-white/6 dark:bg-white/6 bg-slate-900/5 border border-white/8 dark:border-white/8 border-slate-200">
-                <Lock className="mr-2" size={14} /> SECURE ACCESS
-              </span>
             </div>
-          </div>
-
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-2xl font-bold text-white dark:text-white text-slate-900 mb-1">{flow === "signIn" ? "Welcome back" : "Create your premium account"}</h3>
-              <p className="text-sm text-slate-300 dark:text-slate-300 text-slate-600 mb-6">{flow === "signIn" ? "Sign in to continue to the case management dashboard." : "Join Vision Track Premium — enhanced analysis, priority support, and team collaboration."}</p>
-            </div>
+            <h3 className="text-3xl font-bold text-white dark:text-white text-slate-900 mb-2">{flow === "signIn" ? "Welcome back" : "Create your premium account"}</h3>
+            <p className="text-sm text-slate-300 dark:text-slate-300 text-slate-600 leading-relaxed">{flow === "signIn" ? "Sign in to continue to the case management dashboard." : "Join Vision Track Premium — enhanced analysis, priority support, and team collaboration."}</p>
             {flow === 'signUp' && (
-              <div className="ml-4 px-3 py-1 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 text-slate-900 font-semibold text-sm">Premium Trial</div>
+              <div className="mt-3 inline-flex px-3 py-1 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 text-slate-900 font-semibold text-xs">Premium Trial</div>
             )}
           </div>
 
@@ -172,7 +172,7 @@ export function SignInForm() {
             disabled={submitting}
           >
             Continue as Guest
-          </button>
+          </div>
         </div>
       </div>
     </div>

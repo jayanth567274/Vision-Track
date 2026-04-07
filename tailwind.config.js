@@ -1,6 +1,7 @@
 const { fontFamily } = require("tailwindcss/defaultTheme");
 
 module.exports = {
+  darkMode: "class",
   mode: "jit",
   purge: ["./index.html", "./src/**/*.{vue,js,ts,jsx,tsx}"],
   theme: {
@@ -16,11 +17,13 @@ module.exports = {
       boxShadow: {
         DEFAULT: "0 1px 4px rgba(0, 0, 0, 0.1)",
         hover: "0 2px 8px rgba(0, 0, 0, 0.12)",
+        dark: "0 1px 4px rgba(0, 0, 0, 0.3)",
       },
       colors: {
         primary: {
-          DEFAULT: "#4F46E5",
-          hover: "#4338CA",
+          DEFAULT: "#3B82F6",
+          hover: "#2563EB",
+          dark: "#60A5FA",
         },
         secondary: {
           DEFAULT: "#6B7280",
@@ -39,7 +42,10 @@ module.exports = {
   },
   variants: {
     extend: {
-      boxShadow: ["hover", "active"],
+      boxShadow: ["hover", "active", "dark"],
+      backgroundColor: ["dark"],
+      textColor: ["dark"],
+      borderColor: ["dark"],
     },
   },
 };

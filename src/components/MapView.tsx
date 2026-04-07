@@ -9,7 +9,7 @@ interface MapViewProps {
 }
 
 export function MapView({ caseId, case_ }: MapViewProps) {
-  const [mapCenter, setMapCenter] = useState({ lat: 40.7589, lng: -73.9851 });
+  const [mapCenter, setMapCenter] = useState({ lat: 12.906002, lng: 80.140521 });
   const [zoom, setZoom] = useState(13);
   const [selectedLayer, setSelectedLayer] = useState<'tracking' | 'cctv' | 'geofences' | 'all'>('all');
   
@@ -64,14 +64,14 @@ export function MapView({ caseId, case_ }: MapViewProps) {
   return (
     <div className="space-y-6">
       {/* Map Controls */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-        <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg font-semibold text-gray-900">🗺️ Interactive Map View</h3>
-          <div className="flex gap-2">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <div className="flex justify-between items-center mb-6">
+          <h3 className="text-2xl font-bold text-gray-900 dark:text-white">🗺️ Interactive Map View</h3>
+          <div className="flex gap-3">
             <select
               value={selectedLayer}
               onChange={(e) => setSelectedLayer(e.target.value as any)}
-              className="px-3 py-1 border border-gray-300 rounded text-sm"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">All Layers</option>
               <option value="tracking">Tracking Only</option>
@@ -88,7 +88,7 @@ export function MapView({ caseId, case_ }: MapViewProps) {
                   setZoom(15);
                 }
               }}
-              className="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600 text-white rounded-lg font-medium transition-colors"
             >
               📍 Center on Last Location
             </button>
@@ -96,7 +96,7 @@ export function MapView({ caseId, case_ }: MapViewProps) {
         </div>
 
         {/* Layer Legend */}
-        <div className="flex flex-wrap gap-4 text-sm">
+        <div className="flex flex-wrap gap-6 text-sm border-t border-gray-200 dark:border-gray-700 pt-4 mt-4">
           {(selectedLayer === 'all' || selectedLayer === 'tracking') && (
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
@@ -123,7 +123,7 @@ export function MapView({ caseId, case_ }: MapViewProps) {
       </div>
 
       {/* Map Container */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
         <SimpleMap
           center={mapCenter}
           zoom={zoom}
@@ -138,81 +138,105 @@ export function MapView({ caseId, case_ }: MapViewProps) {
 
       {/* Map Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
-          <div className="text-2xl font-bold text-blue-600">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 text-center">
+          <div className="text-2xl font-bold text-blue-600 dark:text-blue-400">
             {trackingUpdates?.length || 0}
           </div>
-          <div className="text-sm text-gray-600">Tracking Points</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">Tracking Points</div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
-          <div className="text-2xl font-bold text-red-600">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 text-center">
+          <div className="text-2xl font-bold text-red-600 dark:text-red-400">
             {cctvFootage?.length || 0}
           </div>
-          <div className="text-sm text-gray-600">CCTV Locations</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">CCTV Locations</div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
-          <div className="text-2xl font-bold text-green-600">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 text-center">
+          <div className="text-2xl font-bold text-green-600 dark:text-green-400">
             {geofences?.length || 0}
           </div>
-          <div className="text-sm text-gray-600">Active Geofences</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">Active Geofences</div>
         </div>
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 text-center">
-          <div className="text-2xl font-bold text-purple-600">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4 text-center">
+          <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
             {case_?.lastKnownCoordinates ? 
               `${case_.lastKnownCoordinates.accuracy}m` : 'N/A'
             }
           </div>
-          <div className="text-sm text-gray-600">GPS Accuracy</div>
+          <div className="text-sm text-gray-600 dark:text-gray-400">GPS Accuracy</div>
         </div>
       </div>
 
-      {/* Location Details */}
-      {case_?.lastKnownCoordinates && (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h4 className="text-lg font-semibold text-gray-900 mb-4">📍 Current Location Details</h4>
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <span className="text-gray-600">Latitude:</span>
-              <p className="font-mono text-gray-900">{case_.lastKnownCoordinates.lat.toFixed(6)}</p>
+      {/* Location Details with Google Maps Links */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
+        <h4 className="text-xl font-bold text-gray-900 dark:text-white mb-6">📍 Location Coordinates</h4>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Primary Location */}
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md dark:hover:shadow-lg transition-shadow animate-fade-in">
+            <h5 className="font-semibold text-gray-900 dark:text-white mb-3">🎯 Primary Location</h5>
+            <div className="space-y-2 text-sm mb-4">
+              <div>
+                <span className="text-gray-600 dark:text-gray-400">Latitude:</span>
+                <p className="font-mono text-gray-900 dark:text-gray-100">12.906002</p>
+              </div>
+              <div>
+                <span className="text-gray-600 dark:text-gray-400">Longitude:</span>
+                <p className="font-mono text-gray-900 dark:text-gray-100">80.140521</p>
+              </div>
             </div>
-            <div>
-              <span className="text-gray-600">Longitude:</span>
-              <p className="font-mono text-gray-900">{case_.lastKnownCoordinates.lng.toFixed(6)}</p>
-            </div>
-            <div>
-              <span className="text-gray-600">Accuracy:</span>
-              <p className="text-gray-900">±{case_.lastKnownCoordinates.accuracy}m</p>
-            </div>
-            <div>
-              <span className="text-gray-600">Last Update:</span>
-              <p className="text-gray-900">
-                {new Date(case_.lastKnownCoordinates.timestamp).toLocaleString()}
-              </p>
-            </div>
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=12.906002,80.140521"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 transition-colors"
+            >
+              Show on Google Maps
+            </a>
           </div>
-          
-          <div className="mt-4 flex gap-2">
-            <button
-              onClick={() => {
-                const coords = `${case_.lastKnownCoordinates.lat},${case_.lastKnownCoordinates.lng}`;
-                window.open(`https://www.google.com/maps?q=${coords}`, '_blank');
-              }}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 text-sm"
+
+          {/* Alternative Location */}
+          <div className="border border-amber-200 dark:border-amber-800 rounded-lg p-4 bg-amber-50 dark:bg-amber-900/30 hover:shadow-md dark:hover:shadow-lg transition-shadow animate-fade-in">
+            <h5 className="font-semibold text-gray-900 dark:text-white mb-3">📍 Alternative Location</h5>
+            <div className="space-y-2 text-sm mb-4">
+              <div>
+                <span className="text-gray-600 dark:text-gray-400">Latitude:</span>
+                <p className="font-mono text-gray-900 dark:text-gray-100">12.908074813132254</p>
+              </div>
+              <div>
+                <span className="text-gray-600 dark:text-gray-400">Longitude:</span>
+                <p className="font-mono text-gray-900 dark:text-gray-100">80.14005896268172</p>
+              </div>
+            </div>
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=12.908074813132254,80.14005896268172"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-slate-900 text-white text-sm font-medium hover:bg-slate-800 transition-colors"
             >
-              🗺️ Open in Google Maps
-            </button>
-            <button
-              onClick={() => {
-                const coords = `${case_.lastKnownCoordinates.lat},${case_.lastKnownCoordinates.lng}`;
-                navigator.clipboard.writeText(coords);
-              }}
-              className="px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 text-sm"
-            >
-              📋 Copy Coordinates
-            </button>
+              Show on Google Maps
+            </a>
           </div>
         </div>
-      )}
+
+        {/* Current GPS Location if available */}
+        {case_?.lastKnownCoordinates && (
+          <div className="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700 animate-fade-in">
+            <h5 className="font-bold text-gray-900 dark:text-white mb-4 text-lg">🔴 Current GPS Location (Live Tracking)</h5>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm mb-4">
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                <span className="text-gray-600 dark:text-gray-400">Accuracy:</span>
+                <p className="font-semibold text-gray-900 dark:text-gray-100">±{case_.lastKnownCoordinates.accuracy}m</p>
+              </div>
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                <span className="text-gray-600 dark:text-gray-400">Last Update:</span>
+                <p className="font-semibold text-gray-900 dark:text-gray-100 text-xs">
+                  {new Date(case_.lastKnownCoordinates.timestamp).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

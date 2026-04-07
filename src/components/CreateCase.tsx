@@ -1,13 +1,15 @@
-import { useState } from "react";
-import { useMutation } from "convex/react";
+import { useState, useEffect } from "react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { toast } from "sonner";
+import { Id } from "../../convex/_generated/dataModel";
 
 interface CreateCaseProps {
-  onCaseCreated: (caseId: string) => void;
+  caseId?: Id<"cases"> | null;
+  onCaseSaved: (caseId: Id<"cases">) => void;
 }
 
-export function CreateCase({ onCaseCreated }: CreateCaseProps) {
+export function CreateCase({ caseId, onCaseSaved }: CreateCaseProps) {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     // Reporter Information
@@ -39,7 +41,13 @@ export function CreateCase({ onCaseCreated }: CreateCaseProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createCase = useMutation(api.cases.createCase);
+  const updateCase = useMutation(api.cases.updateCase);
   const generateUploadUrl = useMutation(api.cases.generateUploadUrl);
+    const caseToEdit = useQuery(
+    api.cases.getCase,
+    caseId ? { caseId } : "skip"
+  );
+  const [hasLoadedEditValues, setHasLoadedEditValues] = useState(false);
 
   const handleInputChange = (field: string, value: string | number) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -49,6 +57,30 @@ export function CreateCase({ onCaseCreated }: CreateCaseProps) {
     const items = value.split(",").map(item => item.trim()).filter(Boolean);
     setFormData(prev => ({ ...prev, [field]: items }));
   };
+
+  useEffect(() => {
+    if (!caseToEdit || hasLoadedEditValues) return;
+
+    setFormData({
+      reporterName: caseToEdit.reporterName || "",
+      reporterEmail: caseToEdit.reporterEmail || "",
+      reporterPhone: caseToEdit.reporterPhone || "",
+      reporterRelation: caseToEdit.reporterRelation || "",
+      personName: caseToEdit.personName || "",
+      age: caseToEdit.age ? String(caseToEdit.age) : "",
+      gender: caseToEdit.gender || "",
+      height: caseToEdit.height || "",
+      bodyType: caseToEdit.bodyType || "",
+      lastSeenLocation: caseToEdit.lastSeenLocation || "",
+      lastSeenDate: caseToEdit.lastSeenDate || "",
+      lastSeenTime: caseToEdit.lastSeenTime || "",
+      clothingDescription: caseToEdit.clothingDescription || "",
+      identifyingFeatures: caseToEdit.identifyingFeatures || [],
+      languagesSpoken: caseToEdit.languagesSpoken || [],
+      behavioralPatterns: caseToEdit.behavioralPatterns || "",
+    });
+    setHasLoadedEditValues(true);
+  }, [caseToEdit, hasLoadedEditValues]);
 
   const handleImageChange = (file: File | null) => {
     if (file) {
@@ -88,18 +120,25 @@ export function CreateCase({ onCaseCreated }: CreateCaseProps) {
         photoId = json.storageId;
       }
 
-      // Create the case
-      const result = await createCase({
-        ...formData,
-        age: parseInt(formData.age),
-        photoId,
-      });
+      const result = caseId
+        ? await updateCase({
+            caseId,
+            ...formData,
+            age: parseInt(formData.age),
+            photoId,
+          })
+        : await createCase({
+            ...formData,
+            age: parseInt(formData.age),
+            photoId,
+          });
 
-      toast.success("📧 Case created successfully! Check your email for confirmation.");
-      onCaseCreated(result.caseId);
+      toast.success(caseId ? "✅ Case updated successfully." : "📧 Case created successfully! Check your email for confirmation.");
+      onCaseSaved(result.caseId);
     } catch (error) {
-      console.error("Error creating case:", error);
-      toast.error("Failed to create case. Please try again.");
+      console.error("Error saving case:", error);
+      const message = error instanceof Error ? error.message : "Please try again.";
+      toast.error(`Failed to ${caseId ? "save changes" : "create case"}. ${message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -121,33 +160,54 @@ export function CreateCase({ onCaseCreated }: CreateCaseProps) {
   };
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-8">
+    <div className="max-w-3xl mx-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-8 md:p-10">
         <div className="mb-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">Create New Missing Person Case</h2>
-          <div className="flex items-center gap-2 mb-4">
-            {[1, 2, 3, 4].map((num) => (
-              <div key={num} className="flex items-center">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                  step >= num ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"
-                }`}>
-                  {num}
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+            {caseId ? "Edit Missing Person Case" : "Report Missing Person"}
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400">
+            {caseId ? "Update the case details and save changes." : "Complete the form to create a new case."}
+          </p>
+          
+          <div className="space-y-4 mt-6">
+            <div className="grid grid-cols-4 gap-3 text-xs uppercase tracking-[0.22em] font-semibold text-slate-500 dark:text-slate-400">
+              {[
+                { id: 1, label: "Reporter" },
+                { id: 2, label: "Person" },
+                { id: 3, label: "Last Seen" },
+                { id: 4, label: "Details" },
+              ].map((item) => (
+                <div key={item.id} className="flex flex-col items-center gap-2">
+                  <div className={`w-10 h-10 rounded-full grid place-items-center text-sm font-semibold transition ${
+                    step === item.id
+                      ? "bg-blue-600 text-white shadow-lg shadow-blue-500/20"
+                      : step > item.id
+                      ? "bg-slate-900 text-white"
+                      : "bg-slate-200 text-slate-600 dark:bg-slate-700 dark:text-slate-400"
+                  }`}>
+                    {item.id}
+                  </div>
+                  <span>{item.label}</span>
                 </div>
-                {num < 4 && <div className={`w-8 h-1 ${step > num ? "bg-blue-600" : "bg-gray-200"}`} />}
-              </div>
-            ))}
+              ))}
+            </div>
+
+            <div className="h-2 overflow-hidden rounded-full bg-slate-200 dark:bg-slate-700">
+              <div className="h-full rounded-full bg-gradient-to-r from-blue-500 to-cyan-400 transition-all" style={{ width: `${((step - 1) / 3) * 100}%` }} />
+            </div>
           </div>
+
           {formData.reporterEmail && (
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-              <p className="text-sm text-blue-800">
+            <div className="bg-blue-50 dark:bg-blue-900/25 border border-blue-200 dark:border-blue-800 rounded-3xl p-4 mb-4 backdrop-blur-sm">
+              <p className="text-sm text-blue-800 dark:text-blue-200">
                 <strong>📧 Email Notifications:</strong> Updates will be sent to <strong>{formData.reporterEmail}</strong>
               </p>
             </div>
           )}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <p className="text-sm text-yellow-800">
-              <strong>⚖️ Important:</strong> This system provides AI-assisted analysis for decision support only. 
-              Always contact local authorities and follow official procedures for missing person cases.
+          <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-3xl p-4 backdrop-blur-sm">
+            <p className="text-sm text-amber-800 dark:text-amber-200">
+              <strong>⚖️ Important:</strong> This system provides AI-assisted analysis for decision support only. Always contact local authorities and follow official procedures for missing person cases.
             </p>
           </div>
         </div>
@@ -183,30 +243,32 @@ export function CreateCase({ onCaseCreated }: CreateCaseProps) {
           />
         )}
 
-        <div className="flex justify-between mt-8">
+        <div className="flex justify-between mt-10 gap-4">
           <button
             onClick={() => setStep(step - 1)}
             disabled={step === 1}
-            className="px-4 py-2 text-gray-600 border border-gray-300 rounded hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2 text-gray-700 dark:text-gray-300 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
           >
-            Previous
+            ← Previous
           </button>
           
           {step < 4 ? (
             <button
               onClick={() => setStep(step + 1)}
               disabled={!isStepValid(step)}
-              className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-blue-600 dark:bg-blue-700 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
             >
-              Next
+              Next →
             </button>
           ) : (
             <button
               onClick={handleSubmit}
               disabled={isSubmitting || !isStepValid(1) || !isStepValid(2) || !isStepValid(3)}
-              className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="px-6 py-2 bg-green-600 dark:bg-green-700 text-white rounded-lg hover:bg-green-700 dark:hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors font-medium"
             >
-              {isSubmitting ? "Creating Case..." : "Create Case"}
+              {isSubmitting
+                ? caseId ? "Saving Changes..." : "Creating Case..."
+                : caseId ? "✓ Save Changes" : "✓ Create Case"}
             </button>
           )}
         </div>
@@ -218,61 +280,63 @@ export function CreateCase({ onCaseCreated }: CreateCaseProps) {
 function ReporterInformation({ formData, onChange }: any) {
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold text-gray-900">Reporter Information</h3>
+      <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+        <span className="text-2xl">👤</span> Reporter Information
+      </h3>
       
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
           Your Full Name *
         </label>
         <input
           type="text"
           value={formData.reporterName}
           onChange={(e) => onChange("reporterName", e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Enter your full name"
+          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+          placeholder="John Smith"
         />
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
           Email Address *
         </label>
         <input
           type="email"
           value={formData.reporterEmail}
           onChange={(e) => onChange("reporterEmail", e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
           placeholder="your.email@example.com"
         />
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
           📧 We'll send case updates and analysis results to this email
         </p>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
           Phone Number (Optional)
         </label>
         <input
           type="tel"
           value={formData.reporterPhone}
           onChange={(e) => onChange("reporterPhone", e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
           placeholder="+1 (555) 123-4567"
         />
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
           📱 Optional: For urgent notifications and updates
         </p>
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
           Relationship to Missing Person *
         </label>
         <select
           value={formData.reporterRelation}
           onChange={(e) => onChange("reporterRelation", e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
         >
           <option value="">Select relationship</option>
           <option value="parent">Parent</option>
@@ -291,31 +355,33 @@ function ReporterInformation({ formData, onChange }: any) {
 function PersonDetails({ formData, onChange }: any) {
   return (
     <div className="space-y-6">
-      <h3 className="text-lg font-semibold text-gray-900">Missing Person Details</h3>
+      <h3 className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+        <span className="text-2xl">👥</span> Missing Person Details
+      </h3>
       
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
           Full Name *
         </label>
         <input
           type="text"
           value={formData.personName}
           onChange={(e) => onChange("personName", e.target.value)}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-          placeholder="Missing person's full name"
+          className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+          placeholder="Full name"
         />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
             Age *
           </label>
           <input
             type="number"
             value={formData.age}
             onChange={(e) => onChange("age", e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
             placeholder="Age"
             min="0"
             max="120"
@@ -323,13 +389,13 @@ function PersonDetails({ formData, onChange }: any) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
             Gender *
           </label>
           <select
             value={formData.gender}
             onChange={(e) => onChange("gender", e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
           >
             <option value="">Select gender</option>
             <option value="male">Male</option>
@@ -342,7 +408,7 @@ function PersonDetails({ formData, onChange }: any) {
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">
             Height
           </label>
           <input
@@ -452,20 +518,22 @@ function AdditionalInformation({ formData, onChange, onArrayChange, selectedImag
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
           />
           {selectedImage && (
-            <div className="relative inline-block">
-              <img 
-                src={URL.createObjectURL(selectedImage)} 
-                alt="Preview" 
-                className="w-40 h-40 object-cover rounded-lg border-2 border-gray-200"
-              />
-              <button
-                type="button"
-                onClick={() => onImageChange(null)}
-                className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
-                title="Remove image"
-              >
-                ×
-              </button>
+            <div className="space-y-3">
+              <div className="relative inline-block">
+                <img 
+                  src={URL.createObjectURL(selectedImage)} 
+                  alt="Preview" 
+                  className="w-40 h-40 object-cover rounded-lg border-2 border-gray-200"
+                />
+                <button
+                  type="button"
+                  onClick={() => onImageChange(null)}
+                  className="absolute -top-2 -right-2 w-6 h-6 bg-red-500 text-white rounded-full flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                  title="Remove image"
+                >
+                  ×
+                </button>
+              </div>
             </div>
           )}
           <p className="text-xs text-gray-500">

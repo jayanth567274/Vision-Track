@@ -2,48 +2,62 @@ import { Authenticated, Unauthenticated, useQuery } from "convex/react";
 import { api } from "../convex/_generated/api";
 import { SignInForm } from "./SignInForm";
 import { SignOutButton } from "./SignOutButton";
+import { ThemeProvider } from "./context/ThemeContext";
+import { ThemeToggle } from "./components/ThemeToggle";
 import { Toaster } from "sonner";
 import { Dashboard } from "./components/Dashboard";
 import { CreateCase } from "./components/CreateCase";
 import { CaseDetails } from "./components/CaseDetails";
 import { useState } from "react";
+import { Id } from "../convex/_generated/dataModel";
 
-export default function App() {
+function AppContent() {
   const [currentView, setCurrentView] = useState<"dashboard" | "create" | "details">("dashboard");
-  const [selectedCaseId, setSelectedCaseId] = useState<string | null>(null);
+  const [selectedCaseId, setSelectedCaseId] = useState<Id<"cases"> | null>(null);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      <header className="sticky top-0 z-10 bg-white/95 backdrop-blur-sm border-b shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 h-16 flex justify-between items-center">
-          <div className="flex items-center gap-4">
-            <h1 className="text-xl font-bold text-blue-600">Missing Person AI</h1>
-            <Authenticated>
-              <nav className="flex gap-4">
-                <button
-                  onClick={() => setCurrentView("dashboard")}
-                  className={`px-3 py-1 rounded ${
-                    currentView === "dashboard"
-                      ? "bg-blue-100 text-blue-700"
-                      : "text-gray-600 hover:text-blue-600"
-                  }`}
-                >
-                  Dashboard
-                </button>
-                <button
-                  onClick={() => setCurrentView("create")}
-                  className={`px-3 py-1 rounded ${
-                    currentView === "create"
-                      ? "bg-blue-100 text-blue-700"
-                      : "text-gray-600 hover:text-blue-600"
-                  }`}
-                >
-                  New Case
-                </button>
-              </nav>
-            </Authenticated>
+    <div className="min-h-screen bg-slate-100 dark:bg-slate-950 text-slate-900 dark:text-slate-100">
+      <header className="sticky top-0 z-30 backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border-b border-slate-200/70 dark:border-slate-800/70 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-600 to-cyan-500 shadow-lg shadow-cyan-500/20 flex items-center justify-center text-white font-bold">
+              VT
+            </div>
+            <div className="space-y-1">
+              <p className="text-base font-semibold text-slate-900 dark:text-white">Vision Track</p>
+              <p className="text-xs text-slate-500 dark:text-slate-400">Insight. Track. Solve.</p>
+            </div>
           </div>
-          <SignOutButton />
+
+          <Authenticated>
+            <nav className="hidden md:flex items-center gap-2 rounded-3xl bg-white/70 dark:bg-slate-800/70 p-2 shadow-sm shadow-slate-200/60 dark:shadow-slate-950/30 backdrop-blur-md">
+              <button
+                onClick={() => setCurrentView("dashboard")}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                  currentView === "dashboard"
+                    ? "bg-blue-600 text-white"
+                    : "text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+                }`}
+              >
+                Dashboard
+              </button>
+              <button
+                onClick={() => setCurrentView("create")}
+                className={`px-4 py-2 rounded-full text-sm font-medium transition ${
+                  currentView === "create"
+                    ? "bg-blue-600 text-white"
+                    : "text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white"
+                }`}
+              >
+                New Case
+              </button>
+            </nav>
+          </Authenticated>
+
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <SignOutButton />
+          </div>
         </div>
       </header>
 
@@ -69,8 +83,8 @@ function Content({
 }: {
   currentView: "dashboard" | "create" | "details";
   setCurrentView: (view: "dashboard" | "create" | "details") => void;
-  selectedCaseId: string | null;
-  setSelectedCaseId: (id: string | null) => void;
+  selectedCaseId: Id<"cases"> | null;
+  setSelectedCaseId: (id: Id<"cases"> | null) => void;
 }) {
   const loggedInUser = useQuery(api.auth.loggedInUser);
 
@@ -85,33 +99,63 @@ function Content({
   return (
     <div className="max-w-7xl mx-auto px-4 py-8">
       <Unauthenticated>
-        <div className="relative overflow-hidden rounded-3xl border border-slate-200 bg-gradient-to-br from-slate-50 via-white to-indigo-50 p-6 shadow-lg sm:p-10">
-          <div className="pointer-events-none absolute -right-24 -top-24 h-56 w-56 rounded-full bg-indigo-100/80 blur-3xl" />
-          <div className="pointer-events-none absolute -bottom-24 -left-24 h-56 w-56 rounded-full bg-cyan-100/80 blur-3xl" />
+        <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950 relative overflow-hidden flex items-center rounded-3xl shadow-2xl border border-slate-200/60 dark:border-slate-800/60">
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            <div className="absolute -right-24 -top-24 w-56 h-56 bg-blue-500/15 dark:bg-blue-500/20 rounded-full blur-3xl" />
+            <div className="absolute -bottom-24 -left-24 w-56 h-56 bg-cyan-300/10 dark:bg-cyan-400/10 rounded-full blur-3xl" />
+            <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-violet-500/10 dark:bg-violet-400/10 rounded-full blur-3xl" />
+          </div>
 
-          <div className="relative grid gap-8 lg:grid-cols-2 lg:items-center">
-            <div className="text-center lg:text-left">
-              <h2 className="mb-4 text-3xl font-bold text-gray-900 sm:text-4xl">
-                AI-Powered Missing Person Detection
-              </h2>
-              <p className="mb-6 text-gray-600">
-                Advanced computer vision and geospatial analysis to assist in
-                locating missing individuals
-              </p>
-              <div className="mb-6 rounded-lg border border-yellow-200 bg-yellow-50 p-4">
-                <p className="text-sm text-yellow-800">
-                  <strong>Ethical AI Notice:</strong> This system provides
-                  decision-support only. All results require human verification
-                  and should not be used as sole evidence.
-                </p>
+          <div className="relative max-w-7xl mx-auto w-full px-4 py-16">
+            <div className="grid gap-12 lg:grid-cols-2 lg:items-center">
+              <div className="space-y-6">
+                <div>
+                  <h1 className="text-4xl md:text-5xl font-bold text-slate-900 dark:text-white mb-4 leading-tight">Vision Track</h1>
+                  <p className="text-xl text-slate-600 dark:text-slate-300 leading-relaxed">
+                    Advanced AI-powered system for finding missing persons using computer vision and geospatial analysis.
+                  </p>
+                </div>
+
+                <div className="space-y-4 pt-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-full bg-blue-500/20 dark:bg-blue-400/20 flex items-center justify-center mt-1">
+                      <span className="text-blue-600 dark:text-blue-300 font-bold">✓</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-slate-900 dark:text-white">AI-Powered Detection</h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Advanced facial recognition and pattern analysis.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-full bg-blue-500/20 dark:bg-blue-400/20 flex items-center justify-center mt-1">
+                      <span className="text-blue-600 dark:text-blue-300 font-bold">✓</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-slate-900 dark:text-white">Live Tracking</h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Real-time GPS and CCTV integration.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start gap-3">
+                    <div className="w-7 h-7 rounded-full bg-blue-500/20 dark:bg-blue-400/20 flex items-center justify-center mt-1">
+                      <span className="text-blue-600 dark:text-blue-300 font-bold">✓</span>
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-slate-900 dark:text-white">Secure & Compliant</h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Built with privacy and ethics in mind.</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="rounded-3xl border border-slate-200/70 dark:border-slate-700/70 bg-white/80 dark:bg-slate-900/80 p-5 shadow-lg shadow-slate-500/10 dark:shadow-slate-950/40">
+                  <p className="text-sm text-slate-700 dark:text-slate-300">
+                    <strong>⚖️ Important:</strong> This system provides AI-assisted analysis for decision support only. All results require human verification and should not be used as sole evidence. Always contact local authorities.
+                  </p>
+                </div>
               </div>
-              <p className="text-sm text-slate-500">
-                Built for safer, faster, and more accountable search workflows.
-              </p>
-            </div>
 
-            <div className="mx-auto w-full max-w-md">
-              <SignInForm />
+              <div className="relative rounded-3xl border border-white/80 dark:border-slate-800/80 bg-white/90 dark:bg-slate-900/90 shadow-2xl shadow-slate-500/10 dark:shadow-slate-950/40 backdrop-blur-xl">
+                <SignInForm />
+              </div>
             </div>
           </div>
         </div>
@@ -128,7 +172,7 @@ function Content({
         )}
         {currentView === "create" && (
           <CreateCase
-            onCaseCreated={(caseId) => {
+            onCaseSaved={(caseId) => {
               setSelectedCaseId(caseId);
               setCurrentView("details");
             }}
@@ -142,5 +186,13 @@ function Content({
         )}
       </Authenticated>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <ThemeProvider>
+      <AppContent />
+    </ThemeProvider>
   );
 }

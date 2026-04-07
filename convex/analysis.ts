@@ -150,11 +150,8 @@ function generateSimulatedMatches(personName: string, lastLocation: string) {
 
 function generateLocationPredictions(lastLocation: string, age: number) {
   const baseLocations = [
-    { area: "Transit Hub", lat: 40.7589, lng: -73.9851 },
-    { area: "Hospital District", lat: 40.7614, lng: -73.9776 },
-    { area: "Community Center", lat: 40.7505, lng: -73.9934 },
-    { area: "Shopping District", lat: 40.7549, lng: -73.9840 },
-    { area: "Residential Area", lat: 40.7648, lng: -73.9808 },
+    { area: "Primary Location", lat: 12.906002, lng: 80.140521 },
+    { area: "Secondary Location", lat: 12.908074813132254, lng: 80.14005896268172 },
   ];
 
   const predictions = baseLocations.slice(0, 3).map((loc, i) => ({

@@ -38,6 +38,7 @@ window.addEventListener('message', async (message) => {
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "@routes": path.resolve(__dirname, "./src/routes"),
     },
   },
 }));

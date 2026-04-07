@@ -4,6 +4,7 @@ import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 import { Plus, AlertCircle, CheckCircle2, Clock, Menu, Home, FileText, MapPin, Settings, Search } from "lucide-react";
 import { CreateCase } from "./CreateCase";
+import SettingsPage from "./Settings";
 
 interface DashboardProps {
   onViewCase: (caseId: Id<"cases">) => void;
@@ -53,11 +54,10 @@ export function Dashboard({ onViewCase }: DashboardProps) {
               <FileText className="w-4 h-4 text-slate-600 dark:text-slate-300" />
               <span className={`${collapsed ? 'hidden' : 'inline'}`}>Cases</span>
             </button>
-            <button className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 ${collapsed ? 'justify-center' : ''}`}>
-              <MapPin className="w-4 h-4 text-slate-600 dark:text-slate-300" />
-              <span className={`${collapsed ? 'hidden' : 'inline'}`}>Live Tracking</span>
-            </button>
-            <button className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 ${collapsed ? 'justify-center' : ''}`}>
+            <button
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800 ${collapsed ? 'justify-center' : ''}`}
+              onClick={() => window.location.href = '/settings'}
+            >
               <Settings className="w-4 h-4 text-slate-600 dark:text-slate-300" />
               <span className={`${collapsed ? 'hidden' : 'inline'}`}>Settings</span>
             </button>
@@ -89,10 +89,6 @@ export function Dashboard({ onViewCase }: DashboardProps) {
                 <option value="resolved">Resolved</option>
                 <option value="closed">Closed</option>
               </select>
-
-              <button onClick={() => setShowCreate(true)} className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl shadow">
-                <Plus className="w-4 h-4" /> New Case
-              </button>
             </div>
         </div>
 
@@ -307,3 +303,14 @@ function CaseCard({ case_, onView }: { case_: any; onView: () => void }) {
     </div>
   );
 }
+
+<button
+            onClick={() => {
+              document.documentElement.classList.toggle("dark");
+              const isDark = document.documentElement.classList.contains("dark");
+              localStorage.setItem("theme", isDark ? "dark" : "light");
+            }}
+            className="p-2 rounded-lg bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-700"
+          >
+            Toggle Theme
+          </button>

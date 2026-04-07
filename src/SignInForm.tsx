@@ -11,59 +11,72 @@ export function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
 
   return (
-    <div className="min-h-screen w-full flex items-stretch">
-      {/* Left: visual + features - 45% width */}
-      <div className="hidden lg:flex w-[45%] relative overflow-hidden p-12 login-left flex-col justify-between dark:bg-slate-900 bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="min-h-screen grid grid-cols-1 lg:grid-cols-2 gap-0">
+      {/* Left: hero section */}
+      <div className="hidden lg:flex flex-col justify-between p-16 bg-white dark:bg-slate-950">
         <div>
-          <div className="flex items-center gap-4 mb-12">
-            <div className="relative w-16 h-16 flex items-center justify-center">
-              <div className="absolute inset-0 rounded-full ring-ring animate-ring" />
-              <div className="relative z-10 w-12 h-12 flex items-center justify-center rounded-full bg-gradient-to-br from-blue-600 to-cyan-400 text-white font-bold text-lg">
-                VT
-              </div>
-            </div>
-            <div>
-              <h1 className="text-4xl font-bold text-white dark:text-white text-slate-900">Vision Track</h1>
-              <p className="text-base text-slate-300 dark:text-slate-300 text-slate-600 mt-1">Insight. Track. Solve.</p>
-            </div>
+          <h2 className="text-5xl font-bold text-slate-900 dark:text-white mb-6">AI-Powered Missing Person Detection</h2>
+          <p className="text-lg text-slate-600 dark:text-slate-300 mb-12 leading-relaxed">Advanced computer vision and geospatial analysis to assist in locating missing individuals</p>
+
+          <div className="bg-yellow-50 dark:bg-yellow-900/20 border-l-4 border-yellow-400 p-4 rounded mb-12">
+            <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              <strong>Ethical AI Notice:</strong> This system provides decision-support only. All results require human verification and should not be used as sole evidence.
+            </p>
           </div>
 
-          <div className="space-y-4">
-            <FeatureCard title="AI Detection" icon={<Cpu className="text-blue-400 dark:text-blue-400 text-blue-600" />} />
-            <FeatureCard title="Live Tracking" icon={<Zap className="text-cyan-400 dark:text-cyan-400 text-cyan-600" />} />
-            <FeatureCard title="Secure & Compliant" icon={<Shield className="text-indigo-300 dark:text-indigo-300 text-indigo-600" />} />
-          </div>
+          <p className="text-sm text-slate-500 dark:text-slate-400">Built for safer, faster, and more accountable search workflows.</p>
         </div>
 
-        <div className="text-sm text-slate-400 dark:text-slate-400 text-slate-600">
-          <p className="font-semibold mb-2">⚖️ Important</p>
-          <p>AI-assisted analysis for decision support only. Always contact local authorities for missing person cases.</p>
+        <div className="space-y-4">
+          <div className="flex items-start gap-3">
+            <Shield className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
+            <div>
+              <p className="font-semibold text-slate-900 dark:text-white">Secure & Compliant</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Built with privacy and ethics in mind</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Zap className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
+            <div>
+              <p className="font-semibold text-slate-900 dark:text-white">Real-time Analysis</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Fast, accurate, and reliable results</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <Cpu className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
+            <div>
+              <p className="font-semibold text-slate-900 dark:text-white">Advanced AI</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Computer vision and pattern recognition</p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Right: form card - 55% width */}
-      <div className="w-full lg:w-[55%] flex items-center justify-center p-8 lg:p-16 bg-white dark:bg-slate-950">
-        <div className="glass-card relative rounded-3xl p-10 shadow-2xl dark:shadow-2xl shadow-slate-200/50 w-full max-w-md">
+      {/* Right: form card */}
+      <div className="flex items-center justify-center p-8 lg:p-12 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-slate-900 dark:to-slate-950">
+        <div className="w-full max-w-md bg-white dark:bg-slate-800 rounded-2xl shadow-xl p-8">
           <div className="mb-8">
-            <div className="flex items-center justify-between mb-2">
-              <div className="inline-flex items-center gap-2">
-                <div className="p-2 rounded-full bg-white/6 dark:bg-white/6 bg-slate-900/10">
-                  <Shield className="text-white dark:text-white text-slate-800 w-4 h-4" />
-                </div>
-                <span className="inline-flex rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wider text-slate-200 dark:text-slate-200 text-slate-700 bg-white/6 dark:bg-white/6 bg-slate-900/5 border border-white/8 dark:border-white/8 border-slate-200">
-                  <Lock className="mr-1" size={12} /> SECURE ACCESS
-                </span>
+            <div className="inline-flex items-center gap-2 mb-4">
+              <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
+                <Lock className="w-4 h-4 text-blue-600 dark:text-blue-400" />
               </div>
+              <span className="text-xs font-semibold uppercase tracking-wider text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 px-3 py-1 rounded-full">
+                SECURE ACCESS
+              </span>
             </div>
-            <h3 className="text-3xl font-bold text-white dark:text-white text-slate-900 mb-2">{flow === "signIn" ? "Welcome back" : "Create your premium account"}</h3>
-            <p className="text-sm text-slate-300 dark:text-slate-300 text-slate-600 leading-relaxed">{flow === "signIn" ? "Sign in to continue to the case management dashboard." : "Join Vision Track Premium — enhanced analysis, priority support, and team collaboration."}</p>
-            {flow === 'signUp' && (
-              <div className="mt-3 inline-flex px-3 py-1 rounded-full bg-gradient-to-r from-yellow-400 to-orange-400 text-slate-900 font-semibold text-xs">Premium Trial</div>
-            )}
+            <h3 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
+              {flow === "signIn" ? "Welcome back" : "Create your account"}
+            </h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              {flow === "signIn" 
+                ? "Sign in to continue to the case management dashboard."
+                : "Join Missing Person AI to start tracking and analysis."
+              }
+            </p>
           </div>
 
           <form
-            className="relative flex flex-col gap-4"
+            className="space-y-4"
             onSubmit={(e) => {
               e.preventDefault();
               setSubmitting(true);
@@ -84,94 +97,145 @@ export function SignInForm() {
               });
             }}
           >
-            <label className="space-y-2">
-              <span className="text-sm font-medium text-slate-200 dark:text-slate-200 text-slate-700">Email address</span>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                Email address
+              </label>
               <input
-                className="w-full rounded-lg bg-[rgba(255,255,255,0.04)] dark:bg-[rgba(255,255,255,0.04)] bg-white border border-[rgba(255,255,255,0.06)] dark:border-[rgba(255,255,255,0.06)] border-slate-200 px-4 py-3 text-slate-100 dark:text-slate-100 text-slate-900 placeholder:text-slate-400 dark:placeholder:text-slate-400 placeholder:text-slate-400 focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition"
+                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                 type="email"
                 name="email"
                 placeholder="name@company.com"
                 required
               />
-            </label>
+            </div>
 
-            {flow === 'signUp' && (
-              <label className="space-y-2">
-                <span className="text-sm font-medium text-slate-200 dark:text-slate-200 text-slate-700">Full name</span>
+            {flow === "signUp" && (
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                  Full name
+                </label>
                 <input
-                  className="w-full rounded-lg bg-[rgba(255,255,255,0.04)] dark:bg-[rgba(255,255,255,0.04)] bg-white border border-[rgba(255,255,255,0.06)] dark:border-[rgba(255,255,255,0.06)] border-slate-200 px-4 py-3 text-slate-100 dark:text-slate-100 text-slate-900 placeholder:text-slate-400 dark:placeholder:text-slate-400 placeholder:text-slate-400 focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition"
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                   type="text"
                   name="fullName"
                   placeholder="Jane Doe"
                   required
                 />
-              </label>
+              </div>
             )}
 
-            <label className="space-y-2 relative">
-              <span className="text-sm font-medium text-slate-200 dark:text-slate-200 text-slate-700">Password</span>
-              <input
-                className="w-full rounded-lg bg-[rgba(255,255,255,0.04)] dark:bg-[rgba(255,255,255,0.04)] bg-white border border-[rgba(255,255,255,0.06)] dark:border-[rgba(255,255,255,0.06)] border-slate-200 px-4 py-3 text-slate-100 dark:text-slate-100 text-slate-900 placeholder:text-slate-400 dark:placeholder:text-slate-400 placeholder:text-slate-400 focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition"
-                type={showPassword ? 'text' : 'password'}
-                name="password"
-                placeholder={flow === 'signIn' ? 'Enter your password' : 'Create a strong password'}
-                required
-              />
-              <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-3 top-9 text-xs text-slate-300 dark:text-slate-300 text-slate-600">{showPassword ? 'Hide' : 'Show'}</button>
-            </label>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                Password
+              </label>
+              <div className="relative">
+                <input
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  placeholder={flow === "signIn" ? "Enter your password" : "Create a strong password"}
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
+                >
+                  {showPassword ? "Hide" : "Show"}
+                </button>
+              </div>
+            </div>
 
-            {flow === 'signUp' && (
+            {flow === "signUp" && (
               <>
-                <label className="space-y-2">
-                  <span className="text-sm font-medium text-slate-200 dark:text-slate-200 text-slate-700">Confirm password</span>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                    Confirm password
+                  </label>
                   <input
-                    className="w-full rounded-lg bg-[rgba(255,255,255,0.04)] dark:bg-[rgba(255,255,255,0.04)] bg-white border border-[rgba(255,255,255,0.06)] dark:border-[rgba(255,255,255,0.06)] border-slate-200 px-4 py-3 text-slate-100 dark:text-slate-100 text-slate-900 placeholder:text-slate-400 dark:placeholder:text-slate-400 placeholder:text-slate-400 focus:outline-none focus:border-[#3B82F6] focus:ring-2 focus:ring-[#3B82F6]/20 transition"
+                    className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-lg bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition"
                     type="password"
                     name="confirmPassword"
                     placeholder="Repeat password"
                     required
                   />
-                </label>
+                </div>
 
-                <div className="space-y-2">
-                  <span className="text-sm font-medium text-slate-200 dark:text-slate-200 text-slate-700">Choose a plan</span>
-                  <div className="flex gap-3">
-                    <label className="flex-1 p-3 rounded-lg bg-[rgba(255,255,255,0.02)] dark:bg-[rgba(255,255,255,0.02)] bg-slate-100 border border-[rgba(255,255,255,0.04)] dark:border-[rgba(255,255,255,0.04)] border-slate-300 text-sm text-slate-900 dark:text-slate-200">
-                      <input type="radio" name="plan" value="personal" defaultChecked className="mr-2" /> Personal — Free
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+                    Choose a plan
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <label className="p-3 border-2 border-slate-200 dark:border-slate-700 rounded-lg cursor-pointer hover:border-blue-500 dark:hover:border-blue-500 transition">
+                      <input type="radio" name="plan" value="personal" defaultChecked className="mr-2" />
+                      <span className="text-sm font-medium text-slate-900 dark:text-white">Personal — Free</span>
                     </label>
-                    <label className="flex-1 p-3 rounded-lg bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-semibold text-sm">
-                      <input type="radio" name="plan" value="premium" className="mr-2" /> Premium — 14d trial
+                    <label className="p-3 border-2 border-blue-500 bg-blue-50 dark:bg-blue-900/20 rounded-lg cursor-pointer">
+                      <input type="radio" name="plan" value="premium" className="mr-2" />
+                      <span className="text-sm font-medium text-blue-700 dark:text-blue-400">Premium — 14d trial</span>
                     </label>
                   </div>
                 </div>
 
-                <label className="flex items-start gap-2 text-sm mt-2">
+                <label className="flex items-start gap-2">
                   <input type="checkbox" name="agree" required className="mt-1" />
-                  <span className="text-slate-300 dark:text-slate-300 text-slate-700">I agree to the Terms of Service and Privacy Policy</span>
+                  <span className="text-sm text-slate-600 dark:text-slate-400">
+                    I agree to the Terms of Service and Privacy Policy
+                  </span>
                 </label>
               </>
             )}
 
-            <div className="flex items-center justify-between gap-4">
-              <button className={`px-6 py-3 rounded-lg text-white font-semibold transition flex items-center gap-2 ${flow==='signUp' ? 'bg-gradient-to-r from-rose-500 to-pink-600 hover:from-rose-600 hover:to-pink-700' : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700'}`} type="submit" disabled={submitting}>
-                {submitting ? (flow === "signIn" ? "Signing in..." : "Creating...") : (flow === "signIn" ? "Sign in" : "Start free trial")}
-              </button>
-              <button type="button" className="px-4 py-3 rounded-lg border border-[rgba(255,255,255,0.06)] dark:border-[rgba(255,255,255,0.06)] border-slate-300 text-slate-200 dark:text-slate-200 text-slate-700" onClick={() => setFlow(flow === "signIn" ? "signUp" : "signIn")}>{flow === "signIn" ? "Sign up instead" : "Sign in instead"}</button>
-            </div>
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full py-3 rounded-lg font-semibold text-white bg-blue-600 hover:bg-blue-700 transition disabled:opacity-60"
+            >
+              {submitting ? (flow === "signIn" ? "Signing in..." : "Creating...") : (flow === "signIn" ? "Sign in" : "Start free trial")}
+            </button>
           </form>
 
-          <div className="my-6 flex items-center justify-center">
-            <hr className="my-4 grow border-[rgba(255,255,255,0.06)] dark:border-[rgba(255,255,255,0.06)] border-slate-200" />
-            <span className="mx-4 text-xs font-semibold uppercase tracking-wider text-slate-300 dark:text-slate-300 text-slate-600">OR CONTINUE AS GUEST</span>
-            <hr className="my-4 grow border-[rgba(255,255,255,0.06)] dark:border-[rgba(255,255,255,0.06)] border-slate-200" />
+          <div className="my-6 flex items-center gap-3">
+            <hr className="flex-1 border-slate-200 dark:border-slate-700" />
+            <span className="text-xs font-semibold uppercase text-slate-500 dark:text-slate-500">OR</span>
+            <hr className="flex-1 border-slate-200 dark:border-slate-700" />
           </div>
 
           <button
-            className="w-full rounded-lg border border-[rgba(255,255,255,0.06)] dark:border-[rgba(255,255,255,0.06)] border-slate-300 bg-[rgba(255,255,255,0.02)] dark:bg-[rgba(255,255,255,0.02)] bg-slate-100 px-4 py-3 text-sm font-semibold text-slate-200 dark:text-slate-200 text-slate-700 transition-colors hover:bg-[rgba(255,255,255,0.04)] dark:hover:bg-[rgba(255,255,255,0.04)] hover:bg-slate-200 disabled:opacity-60"
             onClick={() => void signIn("anonymous")}
             disabled={submitting}
+            className="w-full py-3 rounded-lg border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-white hover:bg-slate-50 dark:hover:bg-slate-700 transition font-medium text-sm disabled:opacity-60"
           >
-            Continue as Guest
+            Continue anonymously
+          </button>
+
+          <div className="mt-6 text-center">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              {flow === "signIn" ? (
+                <>
+                  Don't have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={() => setFlow("signUp")}
+                    className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                  >
+                    Sign up instead
+                  </button>
+                </>
+              ) : (
+                <>
+                  Already have an account?{" "}
+                  <button
+                    type="button"
+                    onClick={() => setFlow("signIn")}
+                    className="text-blue-600 dark:text-blue-400 font-semibold hover:underline"
+                  >
+                    Sign in instead
+                  </button>
+                </>
+              )}
+            </p>
           </div>
         </div>
       </div>
@@ -181,13 +245,13 @@ export function SignInForm() {
 
 function FeatureCard({ title, icon }: { title: string; icon: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-4 p-3 rounded-lg bg-white/2 dark:bg-white/2 bg-slate-200 border-l-4 border-[#3B82F6]/60 dark:border-[#3B82F6]/60 border-[#3B82F6]">
-      <div className="p-2 bg-white/6 dark:bg-white/6 bg-slate-300 rounded">
+    <div className="flex items-center gap-4 p-3 rounded-lg bg-white/50 dark:bg-white/5 border border-slate-200 dark:border-slate-700">
+      <div className="p-2 bg-white dark:bg-slate-800 rounded">
         {icon}
       </div>
       <div>
-        <div className="text-sm font-semibold text-white dark:text-white text-slate-900">{title}</div>
-        <div className="text-xs text-slate-300 dark:text-slate-300 text-slate-600">Fast, accurate, and private</div>
+        <div className="text-sm font-semibold text-slate-900 dark:text-white">{title}</div>
+        <div className="text-xs text-slate-600 dark:text-slate-400">Fast, accurate, and private</div>
       </div>
     </div>
   );

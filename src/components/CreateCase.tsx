@@ -133,7 +133,13 @@ export function CreateCase({ caseId, onCaseSaved }: CreateCaseProps) {
             photoId,
           });
 
-      toast.success(caseId ? "✅ Case updated successfully." : "📧 Case created successfully! Check your email for confirmation.");
+      if (caseId) {
+        toast.success("Case updated successfully.");
+      } else if ("emailSent" in result && result.emailSent) {
+        toast.success("Case created successfully. Check your email for confirmation.");
+      } else {
+        toast.success("Case created successfully. Email notifications are not configured, so no confirmation email was sent.");
+      }
       onCaseSaved(result.caseId);
     } catch (error) {
       console.error("Error saving case:", error);
@@ -581,3 +587,4 @@ function AdditionalInformation({ formData, onChange, onArrayChange, selectedImag
     </div>
   );
 }
+

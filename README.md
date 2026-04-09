@@ -42,6 +42,8 @@ pip install -r requirements.txt
 
 ## Resend Email Setup
 
+Email confirmations are optional. If `RESEND_API_KEY` is missing, cases will still be created and saved normally, but confirmation emails will be skipped.
+
 1. Copy `.env.example` to `.env`
 2. Replace `re_xxxxxxxxx` with your real Resend API key:
 

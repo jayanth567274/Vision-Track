@@ -15,6 +15,45 @@ function getResendClient() {
   return new Resend(apiKey);
 }
 
+async function sendCaseCreatedEmail(args: {
+  caseId: string;
+  reporterName: string;
+  reporterEmail: string;
+  personName: string;
+  age: number;
+  gender: string;
+  lastSeenLocation: string;
+  lastSeenDate: string;
+  lastSeenTime: string;
+}) {
+  const resend = getResendClient();
+  if (!resend) {
+    return { sent: false as const, reason: "missing_api_key" as const };
+  }
+
+  const emailBody =
+    `Hello ${args.reporterName},\n\n` +
+    `Your case has been created successfully with the following details:\n\n` +
+    `Case ID: ${args.caseId}\n` +
+    `Missing Person: ${args.personName}\n` +
+    `Age: ${args.age}\n` +
+    `Gender: ${args.gender}\n` +
+    `Last Seen Location: ${args.lastSeenLocation}\n` +
+    `Last Seen Date: ${args.lastSeenDate}\n` +
+    `Last Seen Time: ${args.lastSeenTime}\n\n` +
+    `We will send you updates as the investigation progresses.\n\n` +
+    `Thank you,\nVision Track Team`;
+
+  await resend.emails.send({
+    from: process.env.EMAIL_FROM || "no-reply@visiontrack.app",
+    to: args.reporterEmail,
+    subject: `Vision Track case created: ${args.caseId}`,
+    text: emailBody,
+  });
+
+  return { sent: true as const };
+}
+
 export const createCase = mutation({
   args: {
     reporterName: v.string(),
@@ -53,37 +92,27 @@ export const createCase = mutation({
       createdBy: userId,
     });
 
+    let emailStatus: { sent: boolean; reason?: string } = { sent: false };
     if (args.reporterEmail) {
-      if (!process.env.RESEND_API_KEY) {
-        throw new Error("Missing RESEND_API_KEY environment variable for sending email notifications.");
+      try {
+        emailStatus = await sendCaseCreatedEmail({
+          caseId,
+          reporterName: args.reporterName,
+          reporterEmail: args.reporterEmail,
+          personName: args.personName,
+          age: args.age,
+          gender: args.gender,
+          lastSeenLocation: args.lastSeenLocation,
+          lastSeenDate: args.lastSeenDate,
+          lastSeenTime: args.lastSeenTime,
+        });
+      } catch (error) {
+        console.warn("Case created, but email notification failed.", error);
+        emailStatus = { sent: false, reason: "send_failed" };
       }
-
-      const emailBody = `Hello ${args.reporterName},\n\n` +
-        `Your case has been created successfully with the following details:\n\n` +
-        `Case ID: ${caseId}\n` +
-        `Missing Person: ${args.personName}\n` +
-        `Age: ${args.age}\n` +
-        `Gender: ${args.gender}\n` +
-        `Last Seen Location: ${args.lastSeenLocation}\n` +
-        `Last Seen Date: ${args.lastSeenDate}\n` +
-        `Last Seen Time: ${args.lastSeenTime}\n\n` +
-        `We will send you updates as the investigation progresses.\n\n` +
-        `Thank you,\nVision Track Team`;
-
-      const resend = getResendClient();
-      if (!resend) {
-        throw new Error("Missing RESEND_API_KEY environment variable for sending email notifications.");
-      }
-
-      await resend.emails.send({
-        from: process.env.EMAIL_FROM || "no-reply@visiontrack.app",
-        to: args.reporterEmail,
-        subject: `Vision Track case created: ${caseId}`,
-        text: emailBody,
-      });
     }
 
-    return { caseId: newCase, caseNumber: caseId };
+    return { caseId: newCase, caseNumber: caseId, emailSent: emailStatus.sent };
   },
 });
 

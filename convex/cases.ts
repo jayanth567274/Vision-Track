@@ -7,7 +7,13 @@ declare const process: {
   env: Record<string, string | undefined>;
 };
 
-const resend = new Resend(process.env.RESEND_API_KEY || "");
+function getResendClient() {
+  const apiKey = process.env.RESEND_API_KEY;
+  if (!apiKey) {
+    return null;
+  }
+  return new Resend(apiKey);
+}
 
 export const createCase = mutation({
   args: {
@@ -63,6 +69,11 @@ export const createCase = mutation({
         `Last Seen Time: ${args.lastSeenTime}\n\n` +
         `We will send you updates as the investigation progresses.\n\n` +
         `Thank you,\nVision Track Team`;
+
+      const resend = getResendClient();
+      if (!resend) {
+        throw new Error("Missing RESEND_API_KEY environment variable for sending email notifications.");
+      }
 
       await resend.emails.send({
         from: process.env.EMAIL_FROM || "no-reply@visiontrack.app",
@@ -144,6 +155,54 @@ export const deleteCase = mutation({
     const case_ = await ctx.db.get(args.caseId);
     if (!case_ || case_.createdBy !== userId) {
       throw new Error("Case not found or access denied");
+    }
+
+    const relatedMatches = await ctx.db
+      .query("matches")
+      .withIndex("by_case", (q) => q.eq("caseId", args.caseId))
+      .collect();
+    for (const match of relatedMatches) {
+      await ctx.db.delete(match._id);
+    }
+
+    const relatedPredictions = await ctx.db
+      .query("predictions")
+      .withIndex("by_case", (q) => q.eq("caseId", args.caseId))
+      .collect();
+    for (const prediction of relatedPredictions) {
+      await ctx.db.delete(prediction._id);
+    }
+
+    const relatedTrackingUpdates = await ctx.db
+      .query("trackingUpdates")
+      .withIndex("by_case", (q) => q.eq("caseId", args.caseId))
+      .collect();
+    for (const update of relatedTrackingUpdates) {
+      await ctx.db.delete(update._id);
+    }
+
+    const relatedLiveAlerts = await ctx.db
+      .query("liveAlerts")
+      .withIndex("by_case", (q) => q.eq("caseId", args.caseId))
+      .collect();
+    for (const alert of relatedLiveAlerts) {
+      await ctx.db.delete(alert._id);
+    }
+
+    const relatedGeofences = await ctx.db
+      .query("geofences")
+      .withIndex("by_case", (q) => q.eq("caseId", args.caseId))
+      .collect();
+    for (const geofence of relatedGeofences) {
+      await ctx.db.delete(geofence._id);
+    }
+
+    const relatedCctv = await ctx.db
+      .query("cctvFootage")
+      .withIndex("by_case", (q) => q.eq("caseId", args.caseId))
+      .collect();
+    for (const footage of relatedCctv) {
+      await ctx.db.delete(footage._id);
     }
 
     await ctx.db.delete(args.caseId);

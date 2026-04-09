@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
-import { Plus, AlertCircle, CheckCircle2, Clock, Menu, Home, FileText, MapPin, Settings, Search } from "lucide-react";
+import { Plus, AlertCircle, CheckCircle2, Clock, Menu, Home, FileText, MapPin, Settings, Search, Trash2 } from "lucide-react";
 import { CreateCase } from "./CreateCase";
 import SettingsPage from "./Settings";
+import { toast } from "sonner";
 
 interface DashboardProps {
   onViewCase: (caseId: Id<"cases">) => void;
@@ -12,11 +13,26 @@ interface DashboardProps {
 
 export function Dashboard({ onViewCase }: DashboardProps) {
   const cases = useQuery(api.cases.getCases) || [];
+  const deleteCase = useMutation(api.cases.deleteCase);
 
   const [collapsed, setCollapsed] = useState<boolean>(false);
   const [showCreate, setShowCreate] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+
+  const handleDeleteCase = async (caseId: Id<"cases">, caseName: string) => {
+    const confirmed = window.confirm(`Delete ${caseName}? This cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+      await deleteCase({ caseId });
+      toast.success("Case deleted");
+    } catch (error) {
+      console.error("Failed to delete case:", error);
+      const message = error instanceof Error ? error.message : "Unknown error";
+      toast.error(`Failed to delete case: ${message}`);
+    }
+  };
 
   useEffect(() => {
     try {
@@ -165,10 +181,17 @@ export function Dashboard({ onViewCase }: DashboardProps) {
                     })
                     .slice(0, 6)
                     .map((c) => (
-                    <tr key={c._id} className="hover:bg-slate-50 dark:hover:bg-slate-800">
+                      <tr key={c._id} className="hover:bg-slate-50 dark:hover:bg-slate-800">
                       <td className="px-3 py-3">
                         <div className="font-medium text-slate-900 dark:text-white">{c.personName}</div>
                         <div className="text-xs text-slate-500 dark:text-slate-400">Case #{c.caseId}</div>
+                        <button
+                          onClick={() => handleDeleteCase(c._id, c.personName)}
+                          className="mt-2 inline-flex items-center gap-1 px-3 py-1 rounded-lg bg-rose-600 text-white text-xs hover:bg-rose-700 transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          Delete
+                        </button>
                       </td>
                       <td className="px-3 py-3">{c.age}</td>
                       <td className="px-3 py-3">{c.lastSeenDate}</td>
@@ -178,7 +201,9 @@ export function Dashboard({ onViewCase }: DashboardProps) {
                       </td>
                       <td className="px-3 py-3">{c.priority}</td>
                       <td className="px-3 py-3">
-                        <button onClick={() => onViewCase(c._id)} className="px-3 py-1 rounded-lg bg-blue-600 text-white text-sm">View</button>
+                        <div className="flex items-center gap-2">
+                          <button onClick={() => onViewCase(c._id)} className="px-3 py-1 rounded-lg bg-blue-600 text-white text-sm">View</button>
+                        </div>
                       </td>
                     </tr>
                   ))}

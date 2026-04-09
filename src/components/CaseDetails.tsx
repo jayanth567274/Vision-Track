@@ -21,6 +21,7 @@ export function CaseDetails({ caseId, onBack }: CaseDetailsProps) {
   const [analysisProgress, setAnalysisProgress] = useState("");
   const [activeTab, setActiveTab] = useState<"overview" | "analysis" | "tracking" | "cctv" | "map">("overview");
   const analyzeCase = useAction(api.analysis.analyzeCase);
+  const deleteCase = useMutation(api.cases.deleteCase);
 
   const handleAnalyze = async () => {
     if (!case_) return;
@@ -61,6 +62,23 @@ export function CaseDetails({ caseId, onBack }: CaseDetailsProps) {
         setIsAnalyzing(false);
         setAnalysisProgress("");
       }, 1000);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!case_) return;
+
+    const confirmed = window.confirm(`Delete ${case_.personName}? This cannot be undone.`);
+    if (!confirmed) return;
+
+    try {
+      await deleteCase({ caseId: case_._id });
+      toast.success("Case deleted");
+      onBack();
+    } catch (error) {
+      console.error("Delete failed:", error);
+      const message = error instanceof Error ? error.message : "Unknown error";
+      toast.error(`Failed to delete case: ${message}`);
     }
   };
 
@@ -165,7 +183,7 @@ export function CaseDetails({ caseId, onBack }: CaseDetailsProps) {
       {activeTab === "overview" && (
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            <CaseSummary case_={case_} />
+            <CaseSummary case_={case_} onDelete={handleDelete} />
             <LastSeenDetails case_={case_} />
           </div>
           <div className="space-y-6">
@@ -178,7 +196,7 @@ export function CaseDetails({ caseId, onBack }: CaseDetailsProps) {
       {activeTab === "analysis" && (
         <div className="grid lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-6">
-            <CaseSummary case_={case_} />
+            <CaseSummary case_={case_} onDelete={handleDelete} />
             
             {case_.analysisComplete && (
               <>
@@ -213,15 +231,25 @@ export function CaseDetails({ caseId, onBack }: CaseDetailsProps) {
   );
 }
 
-function CaseSummary({ case_ }: { case_: any }) {
+function CaseSummary({ case_, onDelete }: { case_: any; onDelete?: () => void }) {
   return (
     <div className="bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-      <div className="flex justify-between items-start mb-6">
+      <div className="flex flex-col gap-4 mb-6 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h2 className="text-2xl font-bold text-gray-900 dark:text-white">{case_.personName}</h2>
           <p className="text-gray-600 dark:text-gray-300">Case #{case_.caseId}</p>
         </div>
-        <div className="flex flex-wrap gap-2">
+        {onDelete && (
+          <button
+            onClick={onDelete}
+            className="inline-flex items-center justify-center px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-medium transition-colors sm:shrink-0"
+          >
+            Delete Case
+          </button>
+        )}
+      </div>
+
+      <div className="flex flex-wrap gap-2 mb-6">
           <span className="px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200 rounded text-sm font-medium">
             {case_.status.toUpperCase()}
           </span>
@@ -238,7 +266,6 @@ function CaseSummary({ case_ }: { case_: any }) {
               🤖 AI ANALYZED
             </span>
           )}
-        </div>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">

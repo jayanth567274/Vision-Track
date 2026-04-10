@@ -28,6 +28,16 @@ export function CaseDetails({ caseId, onBack }: CaseDetailsProps) {
     
     setIsAnalyzing(true);
     setAnalysisProgress("Initializing AI analysis...");
+
+    const analysisPayload = {
+      caseId: case_._id,
+      personName: case_.personName ?? "Unknown",
+      age: Number.isFinite(case_.age) ? case_.age : 0,
+      lastSeenLocation: case_.lastSeenLocation ?? "Unknown location",
+      clothingDescription: case_.clothingDescription ?? "",
+      identifyingFeatures: Array.isArray(case_.identifyingFeatures) ? case_.identifyingFeatures : [],
+      photoUrl: typeof case_.photoUrl === "string" ? case_.photoUrl : undefined,
+    };
     
     try {
       setTimeout(() => setAnalysisProgress("Processing facial features..."), 500);
@@ -35,15 +45,7 @@ export function CaseDetails({ caseId, onBack }: CaseDetailsProps) {
       setTimeout(() => setAnalysisProgress("Generating location predictions..."), 1500);
       setTimeout(() => setAnalysisProgress("Searching for potential matches..."), 2000);
       
-      await analyzeCase({
-        caseId: case_._id,
-        personName: case_.personName,
-        age: case_.age,
-        lastSeenLocation: case_.lastSeenLocation,
-        clothingDescription: case_.clothingDescription,
-        identifyingFeatures: case_.identifyingFeatures,
-        photoUrl: case_.photoUrl || undefined,
-      });
+      await analyzeCase(analysisPayload);
       
       setAnalysisProgress("Analysis completed successfully!");
       toast.success("🎯 AI Analysis completed! Check the results below.");
@@ -55,7 +57,8 @@ export function CaseDetails({ caseId, onBack }: CaseDetailsProps) {
       }
     } catch (error) {
       console.error("Analysis failed:", error);
-      toast.error("❌ Analysis failed. Please try again.");
+      const message = error instanceof Error ? error.message : "Please try again.";
+      toast.error(`❌ Analysis failed. ${message}`);
       setAnalysisProgress("");
     } finally {
       setTimeout(() => {

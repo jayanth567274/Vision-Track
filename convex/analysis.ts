@@ -2,6 +2,10 @@ import { v } from "convex/values";
 import { action, internalMutation } from "./_generated/server";
 import { internal } from "./_generated/api";
 
+declare const process: {
+  env: Record<string, string | undefined>;
+};
+
 export const analyzeCase = action({
   args: {
     caseId: v.id("cases"),
@@ -13,15 +17,19 @@ export const analyzeCase = action({
     photoUrl: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const lastSeenLocation = args.lastSeenLocation.trim() || "Unknown location";
+    const clothingDescription = args.clothingDescription.trim();
+    const identifyingFeatures = args.identifyingFeatures.filter((feature) => feature.trim().length > 0);
+
     // Enhanced AI analysis with better location processing
     await new Promise(resolve => setTimeout(resolve, 2500));
 
     // Try to enhance location data with Google API if available
-    let enhancedLocation = args.lastSeenLocation;
-    if (process.env.GOOGLE_API_KEY) {
+    let enhancedLocation = lastSeenLocation;
+    if (typeof process !== "undefined" && process.env.GOOGLE_API_KEY) {
       try {
         // This would use Google Geocoding API to get more precise location data
-        enhancedLocation = `${args.lastSeenLocation} (📍 Location verified)`;
+        enhancedLocation = `${lastSeenLocation} (📍 Location verified)`;
       } catch (error) {
         console.log("Google API enhancement failed, using basic analysis");
       }
@@ -37,8 +45,8 @@ export const analyzeCase = action({
         "👃 Nose profile: Medium bridge, rounded tip",
         "👄 Mouth features: Medium lips, natural expression"
       ],
-      visualMarkers: args.identifyingFeatures.length > 0 ? 
-        args.identifyingFeatures.map(feature => `✓ ${feature}`) : [
+      visualMarkers: identifyingFeatures.length > 0 ? 
+        identifyingFeatures.map(feature => `✓ ${feature}`) : [
         "📷 No distinctive scars visible in photo",
         "👓 Eyewear: Glasses detected in image",
         "👕 Clothing style: Casual attire observed",
@@ -48,7 +56,7 @@ export const analyzeCase = action({
     };
 
     // Generate potential matches with enhanced location
-    const matches = generateSimulatedMatches(args.personName, enhancedLocation);
+    const matches = generateSimulatedMatches(args.personName, enhancedLocation, clothingDescription);
     
     // Generate location predictions with enhanced data
     const predictions = generateLocationPredictions(enhancedLocation, args.age);
@@ -124,7 +132,7 @@ export const storeAnalysisResults = internalMutation({
   },
 });
 
-function generateSimulatedMatches(personName: string, lastLocation: string) {
+function generateSimulatedMatches(personName: string, lastLocation: string, clothingDescription: string) {
   const matchTypes = ["cctv", "shelter", "report", "social_media"];
   const locations = [
     "Downtown Transit Station",
@@ -140,7 +148,11 @@ function generateSimulatedMatches(personName: string, lastLocation: string) {
     confidence: Math.random() * 40 + 60, // 60-100% confidence
     location: locations[Math.floor(Math.random() * locations.length)],
     description: `Person matching description spotted at location. ${
-      Math.random() > 0.5 ? 'Wearing similar clothing.' : 'Behavioral patterns consistent.'
+      clothingDescription
+        ? `Reported clothing aligns with: ${clothingDescription}.`
+        : Math.random() > 0.5
+        ? "Wearing similar clothing."
+        : "Behavioral patterns consistent."
     }`,
     timestamp: new Date(Date.now() - Math.random() * 72 * 60 * 60 * 1000).toISOString(),
     verified: Math.random() > 0.7,
@@ -162,7 +174,10 @@ function generateLocationPredictions(lastLocation: string, age: number) {
       : i === 1 
       ? "Common destination for assistance services"
       : "Frequent public gathering spot",
-    coordinates: loc,
+    coordinates: {
+      lat: loc.lat,
+      lng: loc.lng,
+    },
   }));
 
   return {

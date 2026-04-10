@@ -69,6 +69,7 @@ const applicationTables = {
 
   matches: defineTable({
     caseId: v.id("cases"),
+    sourceFootageId: v.optional(v.id("cctvFootage")),
     matchType: v.string(), // "cctv", "shelter", "report", "social_media", "gps_ping"
     confidence: v.number(),
     location: v.string(),

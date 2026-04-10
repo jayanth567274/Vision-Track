@@ -3,7 +3,6 @@ import { api } from "../../convex/_generated/api";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Id } from "../../convex/_generated/dataModel";
-import { LiveTracking } from "./LiveTracking";
 import { CCTVFootage } from "./CCTVFootage";
 import { MapView } from "./MapView";
 
@@ -16,12 +15,20 @@ export function CaseDetails({ caseId, onBack }: CaseDetailsProps) {
   const case_ = useQuery(api.cases.getCase, { caseId: caseId as Id<"cases"> });
   const matches = useQuery(api.matches.getMatches, { caseId: caseId as Id<"cases"> });
   const predictions = useQuery(api.matches.getPredictions, { caseId: caseId as Id<"cases"> });
+  const cctvFootage = useQuery(api.cctv.getCCTVFootage, { caseId: caseId as Id<"cases"> });
   
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisProgress, setAnalysisProgress] = useState("");
-  const [activeTab, setActiveTab] = useState<"overview" | "analysis" | "tracking" | "cctv" | "map">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "analysis" | "cctv" | "map">("overview");
   const analyzeCase = useAction(api.analysis.analyzeCase);
   const deleteCase = useMutation(api.cases.deleteCase);
+  const hasConfirmedCCTV = (cctvFootage || []).some((footage) => footage.status === "confirmed");
+
+  useEffect(() => {
+    if (activeTab === "map" && !hasConfirmedCCTV) {
+      setActiveTab("cctv");
+    }
+  }, [activeTab, hasConfirmedCCTV]);
 
   const handleAnalyze = async () => {
     if (!case_) return;
@@ -150,16 +157,6 @@ export function CaseDetails({ caseId, onBack }: CaseDetailsProps) {
             🤖 AI Analysis
           </button>
           <button
-            onClick={() => setActiveTab("tracking")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === "tracking"
-                ? "border-blue-500 text-blue-600 dark:text-blue-300"
-                : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600"
-            }`}
-          >
-            📍 Live Tracking
-          </button>
-          <button
             onClick={() => setActiveTab("cctv")}
             className={`py-2 px-1 border-b-2 font-medium text-sm ${
               activeTab === "cctv"
@@ -169,16 +166,18 @@ export function CaseDetails({ caseId, onBack }: CaseDetailsProps) {
           >
             🎥 CCTV Footage
           </button>
-          <button
-            onClick={() => setActiveTab("map")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === "map"
-                ? "border-blue-500 text-blue-600 dark:text-blue-300"
-                : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600"
-            }`}
-          >
-            🗺️ Map View
-          </button>
+          {hasConfirmedCCTV && (
+            <button
+              onClick={() => setActiveTab("map")}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "map"
+                  ? "border-blue-500 text-blue-600 dark:text-blue-300"
+                  : "border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600"
+              }`}
+            >
+              🗺️ Map View
+            </button>
+          )}
         </nav>
       </div>
 
@@ -219,16 +218,12 @@ export function CaseDetails({ caseId, onBack }: CaseDetailsProps) {
         </div>
       )}
 
-      {activeTab === "tracking" && (
-        <LiveTracking caseId={caseId} case_={case_} />
-      )}
-
       {activeTab === "cctv" && (
         <CCTVFootage caseId={caseId} />
       )}
 
-      {activeTab === "map" && (
-        <MapView caseId={caseId} case_={case_} />
+      {activeTab === "map" && hasConfirmedCCTV && (
+        <MapView caseId={caseId} />
       )}
     </div>
   );
@@ -259,11 +254,6 @@ function CaseSummary({ case_, onDelete }: { case_: any; onDelete?: () => void })
           <span className="px-3 py-1 bg-yellow-100 text-yellow-800 rounded text-sm font-medium">
             {case_.priority.toUpperCase()} PRIORITY
           </span>
-          {case_.liveTrackingEnabled && (
-            <span className="px-3 py-1 bg-green-100 text-green-800 rounded text-sm font-medium">
-              📍 LIVE TRACKING
-            </span>
-          )}
           {case_.analysisComplete && (
             <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded text-sm font-medium">
               🤖 AI ANALYZED
@@ -324,24 +314,6 @@ function CaseSummary({ case_, onDelete }: { case_: any; onDelete?: () => void })
             </div>
           )}
 
-          {case_.lastKnownCoordinates && (
-            <div>
-              <h3 className="font-semibold text-gray-900 dark:text-white mb-2">📍 Current GPS Location</h3>
-              <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 p-3 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-medium text-green-800 dark:text-green-200">LIVE LOCATION</span>
-                </div>
-                <p className="text-sm text-green-800 dark:text-green-200">
-                  <strong>Coordinates:</strong> {case_.lastKnownCoordinates.lat.toFixed(6)}, {case_.lastKnownCoordinates.lng.toFixed(6)}
-                  <br />
-                  <strong>Accuracy:</strong> ±{case_.lastKnownCoordinates.accuracy}m
-                  <br />
-                  <strong>Last Update:</strong> {new Date(case_.lastKnownCoordinates.timestamp).toLocaleString()}
-                </p>
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

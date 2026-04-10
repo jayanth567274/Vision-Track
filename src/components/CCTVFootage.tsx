@@ -1,4 +1,4 @@
-import { useQuery, useMutation, useAction } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -10,26 +10,12 @@ interface CCTVFootageProps {
 
 export function CCTVFootage({ caseId }: CCTVFootageProps) {
   const [isUploading, setIsUploading] = useState(false);
-  const [isSimulating, setIsSimulating] = useState(false);
   const [showUploadForm, setShowUploadForm] = useState(false);
 
   const footage = useQuery(api.cctv.getCCTVFootage, { caseId: caseId as Id<"cases"> });
   const uploadFootage = useMutation(api.cctv.uploadCCTVFootage);
   const reviewFootage = useMutation(api.cctv.reviewCCTVFootage);
   const generateUploadUrl = useMutation(api.cctv.generateCCTVUploadUrl);
-  const simulateDiscovery = useAction(api.cctv.simulateCCTVDiscovery);
-
-  const handleSimulateDiscovery = async () => {
-    setIsSimulating(true);
-    try {
-      await simulateDiscovery({ caseId: caseId as Id<"cases"> });
-      toast.success("🎥 CCTV footage discovered and analyzed!");
-    } catch (error) {
-      toast.error("Failed to simulate CCTV discovery");
-    } finally {
-      setIsSimulating(false);
-    }
-  };
 
   const handleReview = async (footageId: string, status: "confirmed" | "rejected", notes?: string) => {
     try {
@@ -50,21 +36,12 @@ export function CCTVFootage({ caseId }: CCTVFootageProps) {
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold text-gray-900">🎥 CCTV Footage Analysis</h3>
-          <div className="flex gap-2">
-            <button
-              onClick={handleSimulateDiscovery}
-              disabled={isSimulating}
-              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-            >
-              {isSimulating ? "Discovering..." : "🔍 Discover Footage"}
-            </button>
-            <button
-              onClick={() => setShowUploadForm(!showUploadForm)}
-              className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
-            >
-              📤 Upload Footage
-            </button>
-          </div>
+          <button
+            onClick={() => setShowUploadForm(!showUploadForm)}
+            className="px-4 py-2 bg-green-600 text-white rounded hover:bg-green-700"
+          >
+            📤 Upload Footage
+          </button>
         </div>
 
         <div className="bg-blue-50 p-4 rounded-lg">
@@ -103,7 +80,7 @@ export function CCTVFootage({ caseId }: CCTVFootageProps) {
           <div className="text-gray-400 text-4xl mb-3">🎥</div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">No CCTV Footage Yet</h3>
           <p className="text-gray-600 mb-4">
-            Upload footage or use our discovery tool to find relevant CCTV recordings
+            Upload footage to start CCTV analysis
           </p>
         </div>
       )}
@@ -344,9 +321,9 @@ function FootageCard({ footage, onReview }: any) {
           <h5 className="font-medium text-gray-900 mb-2">🤖 AI Analysis Results</h5>
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
-              <span className="text-gray-600">Person Detected:</span>
-              <span className={`ml-2 ${footage.aiAnalysis.personDetected ? 'text-green-600' : 'text-red-600'}`}>
-                {footage.aiAnalysis.personDetected ? '✓ Yes' : '✗ No'}
+              <span className="text-gray-600">Person Status:</span>
+              <span className={`ml-2 font-medium ${footage.aiAnalysis.personDetected ? 'text-green-600' : 'text-red-600'}`}>
+                {footage.aiAnalysis.personDetected ? 'Person identified' : 'Person not identified'}
               </span>
             </div>
             <div>
@@ -378,10 +355,38 @@ function FootageCard({ footage, onReview }: any) {
         </div>
       )}
 
-      {footage.coordinates && (
+      {footage.status === "confirmed" && footage.coordinates && (
         <div className="mb-4 text-sm text-gray-600">
           <span className="font-medium">📍 Location:</span> 
           {footage.coordinates.lat.toFixed(6)}, {footage.coordinates.lng.toFixed(6)}
+        </div>
+      )}
+
+      {footage.status === "confirmed" && footage.coordinates && (
+        <div className="mb-4 rounded-lg border border-emerald-200 bg-emerald-50 p-4">
+          <h5 className="font-medium text-emerald-900 mb-2">🗺️ Map View</h5>
+          <p className="text-sm text-emerald-800">
+            This confirmed sighting will appear on the map view.
+          </p>
+          <p className="text-sm text-emerald-800 mt-2 font-mono">
+            {footage.coordinates.lat.toFixed(6)}, {footage.coordinates.lng.toFixed(6)}
+          </p>
+          <a
+            href={`https://www.google.com/maps/search/?api=1&query=${footage.coordinates.lat},${footage.coordinates.lng}`}
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center justify-center mt-3 px-3 py-2 rounded-lg bg-emerald-600 text-white text-sm font-medium hover:bg-emerald-700 transition-colors"
+          >
+            Open in Google Maps
+          </a>
+        </div>
+      )}
+
+      {footage.status === "rejected" && (
+        <div className="mb-4 rounded-lg border border-rose-200 bg-rose-50 p-4">
+          <p className="text-sm text-rose-800">
+            This CCTV footage was rejected, so no map view is shown.
+          </p>
         </div>
       )}
 

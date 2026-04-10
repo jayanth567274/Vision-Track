@@ -1,5 +1,5 @@
 import { v } from "convex/values";
-import { query, mutation, action, internalMutation } from "./_generated/server";
+import { query, mutation, internalMutation } from "./_generated/server";
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { internal } from "./_generated/api";
 
@@ -101,6 +101,17 @@ export const reviewCCTVFootage = mutation({
       throw new Error("Access denied");
     }
 
+    const existingMatches = await ctx.db
+      .query("matches")
+      .withIndex("by_case", (q) => q.eq("caseId", footage.caseId))
+      .collect();
+
+    for (const match of existingMatches) {
+      if (match.matchType === "cctv" && match.sourceFootageId === args.footageId) {
+        await ctx.db.delete(match._id);
+      }
+    }
+
     await ctx.db.patch(args.footageId, {
       status: args.status,
       reviewedBy: userId,
@@ -112,6 +123,7 @@ export const reviewCCTVFootage = mutation({
     if (args.status === "confirmed") {
       await ctx.db.insert("matches", {
         caseId: footage.caseId,
+        sourceFootageId: args.footageId,
         matchType: "cctv",
         confidence: footage.confidence,
         location: footage.location,
@@ -176,41 +188,6 @@ export const analyzeCCTVFootage = internalMutation({
         acknowledged: false,
       });
     }
-  },
-});
-
-// Simulate CCTV footage discovery (for demo)
-export const simulateCCTVDiscovery = action({
-  args: { caseId: v.id("cases") },
-  handler: async (ctx, args) => {
-    const locations = [
-      "Main Street Camera #12",
-      "Shopping Mall Entrance",
-      "Bus Station Platform 3",
-      "Park Avenue & 5th Street",
-      "Hospital Parking Lot",
-    ];
-
-    for (let i = 0; i < 3; i++) {
-      const location = locations[Math.floor(Math.random() * locations.length)];
-      const timestamp = Date.now() - Math.random() * 24 * 60 * 60 * 1000; // Last 24 hours
-
-      await ctx.runMutation(internal.cctv.createSimulatedFootage, {
-        caseId: args.caseId,
-        location,
-        cameraId: `CAM-${Math.random().toString(36).substr(2, 6).toUpperCase()}`,
-        timestamp,
-        duration: Math.floor(Math.random() * 300) + 30, // 30-330 seconds
-        coordinates: {
-          lat: 40.7589 + (Math.random() - 0.5) * 0.02,
-          lng: -73.9851 + (Math.random() - 0.5) * 0.02,
-        },
-      });
-
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    }
-
-    return { success: true };
   },
 });
 

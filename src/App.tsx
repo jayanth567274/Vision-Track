@@ -131,8 +131,8 @@ function Content({
                       <span className="text-blue-600 dark:text-blue-300 font-bold">✓</span>
                     </div>
                     <div>
-                      <h3 className="font-semibold text-slate-900 dark:text-white">Live Tracking</h3>
-                      <p className="text-sm text-slate-600 dark:text-slate-400">Real-time GPS and CCTV integration.</p>
+                      <h3 className="font-semibold text-slate-900 dark:text-white">CCTV Analysis</h3>
+                      <p className="text-sm text-slate-600 dark:text-slate-400">Video review and case matching tools.</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">

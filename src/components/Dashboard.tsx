@@ -149,7 +149,7 @@ export function Dashboard({ onViewCase }: DashboardProps) {
                 <span className="text-4xl">🔍</span>
               </div>
               <h4 className="text-lg font-medium text-slate-900 dark:text-white mb-2">No cases yet</h4>
-              <p className="text-slate-600 dark:text-slate-400">Create your first case to begin tracking.</p>
+              <p className="text-slate-600 dark:text-slate-400">Create your first case to begin analysis.</p>
             </div>
           ) : (
             <div className="overflow-x-auto">

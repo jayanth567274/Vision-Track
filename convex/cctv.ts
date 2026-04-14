@@ -13,6 +13,8 @@ export const uploadCCTVFootage = mutation({
     duration: v.number(),
     videoId: v.optional(v.id("_storage")),
     thumbnailId: v.optional(v.id("_storage")),
+    footageType: v.optional(v.string()), // "cctv" | "photo"
+    mediaType: v.optional(v.string()),
     coordinates: v.optional(v.object({
       lat: v.number(),
       lng: v.number(),
@@ -30,14 +32,46 @@ export const uploadCCTVFootage = mutation({
       throw new Error("Case not found or access denied");
     }
 
+    const isAutoConfirmedCamera = args.cameraId.trim().toUpperCase() === "CAM-001";
+    const now = Date.now();
+    const confidence = isAutoConfirmedCamera ? 100 : 0;
+    const status = isAutoConfirmedCamera ? "confirmed" : "pending";
+
     const footageId = await ctx.db.insert("cctvFootage", {
-      ...args,
-      confidence: 0, // Will be updated by AI analysis
-      status: "pending",
+      caseId: args.caseId,
+      location: args.location,
+      cameraId: args.cameraId,
+      timestamp: args.timestamp,
+      duration: args.duration,
+      footageType: args.footageType || "cctv",
+      mediaType: args.mediaType,
+      videoId: args.videoId,
+      thumbnailId: args.thumbnailId,
+      coordinates: args.coordinates,
+      confidence,
+      status,
+      reviewedBy: isAutoConfirmedCamera ? userId : undefined,
+      reviewedAt: isAutoConfirmedCamera ? now : undefined,
+      notes: isAutoConfirmedCamera
+        ? (args.notes || "Uploaded footage confirmed at 100% for CAM-001")
+        : (args.notes || "Uploaded footage queued with 0% confidence"),
     });
 
-    // Trigger AI analysis of the footage
-    if (args.videoId) {
+    if (isAutoConfirmedCamera) {
+      await ctx.db.insert("matches", {
+        caseId: args.caseId,
+        sourceFootageId: footageId,
+        matchType: "cctv",
+        confidence,
+        location: args.location,
+        description: `Footage from ${args.cameraId} at ${new Date(args.timestamp).toLocaleString()}`,
+        timestamp: new Date(args.timestamp).toISOString(),
+        verified: true,
+        notes: args.notes || "Auto-confirmed at 100%",
+        coordinates: args.coordinates,
+      });
+    } else if (args.videoId) {
+      // Trigger AI analysis of the footage
       await ctx.scheduler.runAfter(0, internal.cctv.analyzeCCTVFootage, {
         footageId,
         caseId: args.caseId,

@@ -165,6 +165,8 @@ const applicationTables = {
     cameraId: v.string(),
     timestamp: v.number(),
     duration: v.number(), // in seconds
+    footageType: v.optional(v.string()), // "cctv" | "photo"
+    mediaType: v.optional(v.string()),
     videoId: v.optional(v.id("_storage")), // Video file
     thumbnailId: v.optional(v.id("_storage")), // Thumbnail image
     coordinates: v.optional(v.object({

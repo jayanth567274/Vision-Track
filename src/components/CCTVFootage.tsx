@@ -96,7 +96,8 @@ function UploadForm({ caseId, onUpload, onCancel }: any) {
     coordinates: { lat: "", lng: "" },
     notes: "",
   });
-  const [selectedVideo, setSelectedVideo] = useState<File | null>(null);
+  const [selectedMedia, setSelectedMedia] = useState<File | null>(null);
+  const [footageType, setFootageType] = useState<"cctv" | "mobile">("cctv");
   const [isUploading, setIsUploading] = useState(false);
 
   const uploadFootage = useMutation(api.cctv.uploadCCTVFootage);
@@ -113,12 +114,12 @@ function UploadForm({ caseId, onUpload, onCancel }: any) {
     try {
       let videoId = undefined;
 
-      if (selectedVideo) {
+      if (selectedMedia) {
         const postUrl = await generateUploadUrl();
         const result = await fetch(postUrl, {
           method: "POST",
-          headers: { "Content-Type": selectedVideo.type },
-          body: selectedVideo,
+          headers: { "Content-Type": selectedMedia.type },
+          body: selectedMedia,
         });
         const json = await result.json();
         if (!result.ok) {
@@ -132,8 +133,10 @@ function UploadForm({ caseId, onUpload, onCancel }: any) {
         location: formData.location,
         cameraId: formData.cameraId,
         timestamp: new Date(formData.timestamp).getTime(),
-        duration: selectedVideo ? Math.floor(selectedVideo.size / 1000) : 60, // Estimate duration
+        duration: selectedMedia ? Math.max(1, Math.floor(selectedMedia.size / 1000)) : 60, // Estimate duration
         videoId,
+        footageType,
+        mediaType: selectedMedia?.type,
         coordinates: formData.coordinates.lat && formData.coordinates.lng ? {
           lat: parseFloat(formData.coordinates.lat),
           lng: parseFloat(formData.coordinates.lng),
@@ -154,6 +157,32 @@ function UploadForm({ caseId, onUpload, onCancel }: any) {
       <h4 className="text-lg font-semibold text-gray-900 mb-4">Upload CCTV Footage</h4>
       
       <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-medium text-gray-700">Footage Type:</span>
+          <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="radio"
+              name="footageType"
+              value="cctv"
+              checked={footageType === "cctv"}
+              onChange={() => setFootageType("cctv")}
+              className="text-blue-600 focus:ring-blue-500"
+            />
+            CCTV Video
+          </label>
+          <label className="inline-flex items-center gap-2 text-sm text-gray-700">
+            <input
+              type="radio"
+              name="footageType"
+              value="mobile"
+              checked={footageType === "mobile"}
+              onChange={() => setFootageType("mobile")}
+              className="text-blue-600 focus:ring-blue-500"
+            />
+            Mobile Video
+          </label>
+        </div>
+
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -233,17 +262,14 @@ function UploadForm({ caseId, onUpload, onCancel }: any) {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Video File (Optional)
+            {footageType === "mobile" ? "Mobile Video File (Optional)" : "Video File (Optional)"}
           </label>
           <input
             type="file"
             accept="video/*"
-            onChange={(e) => setSelectedVideo(e.target.files?.[0] || null)}
+            onChange={(e) => setSelectedMedia(e.target.files?.[0] || null)}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           />
-          <p className="text-xs text-gray-500 mt-1">
-            Supported formats: MP4, AVI, MOV (max 100MB)
-          </p>
         </div>
 
         <div>

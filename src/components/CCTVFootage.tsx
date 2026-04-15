@@ -369,10 +369,10 @@ function FootageCard({ footage, onReview }: any) {
       )}
 
       {footage.videoUrl && (
-        <div className="mb-4">
+        <div className="mb-4 flex justify-center">
           <video 
             controls 
-            className="w-full max-w-md h-48 bg-gray-100 rounded"
+            className="block w-full max-w-4xl aspect-video object-contain object-center bg-black rounded-lg shadow-sm"
             poster={footage.thumbnailUrl}
           >
             <source src={footage.videoUrl} type="video/mp4" />

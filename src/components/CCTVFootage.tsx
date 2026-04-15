@@ -103,10 +103,24 @@ function UploadForm({ caseId, onUpload, onCancel }: any) {
   const uploadFootage = useMutation(api.cctv.uploadCCTVFootage);
   const generateUploadUrl = useMutation(api.cctv.generateCCTVUploadUrl);
 
+  const isValidMobileCameraId = (cameraId: string) => {
+    const normalized = cameraId.trim().toUpperCase();
+    const match = /^CAM-(\d{3})$/.exec(normalized);
+    if (!match) return false;
+
+    const cameraNumber = Number(match[1]);
+    return cameraNumber >= 1 && cameraNumber <= 20;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.location || !formData.cameraId || !formData.timestamp) {
       toast.error("Please fill in required fields");
+      return;
+    }
+
+    if (footageType === "mobile" && !isValidMobileCameraId(formData.cameraId)) {
+      toast.error("Wrong CAM ID");
       return;
     }
 
@@ -131,7 +145,7 @@ function UploadForm({ caseId, onUpload, onCancel }: any) {
       await uploadFootage({
         caseId: caseId as Id<"cases">,
         location: formData.location,
-        cameraId: formData.cameraId,
+        cameraId: formData.cameraId.trim().toUpperCase(),
         timestamp: new Date(formData.timestamp).getTime(),
         duration: selectedMedia ? Math.max(1, Math.floor(selectedMedia.size / 1000)) : 60, // Estimate duration
         videoId,
@@ -146,7 +160,8 @@ function UploadForm({ caseId, onUpload, onCancel }: any) {
 
       onUpload();
     } catch (error) {
-      toast.error("Failed to upload footage");
+      const message = error instanceof Error ? error.message : "Failed to upload footage";
+      toast.error(message === "Wrong CAM ID" ? "Wrong CAM ID" : "Failed to upload footage");
     } finally {
       setIsUploading(false);
     }

@@ -32,7 +32,17 @@ export const uploadCCTVFootage = mutation({
       throw new Error("Case not found or access denied");
     }
 
-    const isAutoConfirmedCamera = args.cameraId.trim().toUpperCase() === "CAM-001";
+    const normalizedCameraId = args.cameraId.trim().toUpperCase();
+    const isMobileFootage = (args.footageType || "cctv") === "mobile";
+    const cameraMatch = /^CAM-(\d{3})$/.exec(normalizedCameraId);
+    const cameraNumber = cameraMatch ? Number(cameraMatch[1]) : NaN;
+    const isValidMobileCameraId = cameraNumber >= 1 && cameraNumber <= 20;
+
+    if (isMobileFootage && !isValidMobileCameraId) {
+      throw new Error("Wrong CAM ID");
+    }
+
+    const isAutoConfirmedCamera = isMobileFootage && isValidMobileCameraId;
     const now = Date.now();
     const confidence = isAutoConfirmedCamera ? 100 : 0;
     const status = isAutoConfirmedCamera ? "confirmed" : "pending";
@@ -40,7 +50,7 @@ export const uploadCCTVFootage = mutation({
     const footageId = await ctx.db.insert("cctvFootage", {
       caseId: args.caseId,
       location: args.location,
-      cameraId: args.cameraId,
+      cameraId: normalizedCameraId,
       timestamp: args.timestamp,
       duration: args.duration,
       footageType: args.footageType || "cctv",
@@ -53,7 +63,7 @@ export const uploadCCTVFootage = mutation({
       reviewedBy: isAutoConfirmedCamera ? userId : undefined,
       reviewedAt: isAutoConfirmedCamera ? now : undefined,
       notes: isAutoConfirmedCamera
-        ? (args.notes || "Uploaded footage confirmed at 100% for CAM-001")
+        ? (args.notes || "Uploaded footage confirmed at 100% for valid CAM ID")
         : (args.notes || "Uploaded footage queued with 0% confidence"),
     });
 
@@ -64,13 +74,13 @@ export const uploadCCTVFootage = mutation({
         matchType: "cctv",
         confidence,
         location: args.location,
-        description: `Footage from ${args.cameraId} at ${new Date(args.timestamp).toLocaleString()}`,
+        description: `Footage from ${normalizedCameraId} at ${new Date(args.timestamp).toLocaleString()}`,
         timestamp: new Date(args.timestamp).toISOString(),
         verified: true,
         notes: args.notes || "Auto-confirmed at 100%",
         coordinates: args.coordinates,
       });
-    } else if (args.videoId) {
+    } else if (isMobileFootage && args.videoId) {
       // Trigger AI analysis of the footage
       await ctx.scheduler.runAfter(0, internal.cctv.analyzeCCTVFootage, {
         footageId,
